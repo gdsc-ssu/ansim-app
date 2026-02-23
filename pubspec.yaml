@@ -60,3 +60,17 @@ flutter:
   assets:
     - .env
     - assets/
+
+  fonts:
+    - family: NotoSansKRBold
+      fonts:
+        - asset: assets/fonts/NotoSansKR-Bold.ttf
+    - family: NotoSansKRExtraBold
+      fonts:
+        - asset: assets/fonts/NotoSansKR-ExtraBold.ttf
+    - family: NotoSansKRMedium
+      fonts:
+        - asset: assets/fonts/NotoSansKR-Medium.ttf
+    - family: NotoSansKRSemiBold
+      fonts:
+        - asset: assets/fonts/NotoSansKR-SemiBold.ttf
