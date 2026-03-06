@@ -67,8 +67,8 @@ class ApiClient {
           try {
             log('[Interceptor] 401 → 토큰 재발급 시도 중...');
 
-            final authService = GetIt.instance<AuthService>();
-            await authService.reissueToken();
+            //final authService = GetIt.instance<AuthService>();
+            //await authService.reissueToken();
 
             final newToken = await _secureStorage.readAccessToken();
             if (newToken == null) throw Exception('재발급된 토큰이 없습니다.');
