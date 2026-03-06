@@ -1,8 +1,18 @@
 import 'package:ansim_app/route/routes.dart';
+import 'package:ansim_app/screens/map/map_view_model.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+      MultiProvider(
+        providers: [
+          // 여기서 MapViewModel을 앱 전역에 공급합니다.
+          ChangeNotifierProvider(create: (_) => MapViewModel()),
+        ],
+        child: const MyApp(),
+  ),
+  );
 }
 
 class MyApp extends StatelessWidget {
