@@ -1,5 +1,5 @@
-import 'package:ansim_app/common/wigets/ansim_button.dart';
-import 'package:ansim_app/common/wigets/atom/texts/texts.dart'; // 텍스트 스타일 임포트
+import 'package:ansim_app/common/widgets/ansim_button.dart';
+import 'package:ansim_app/common/widgets/atom/texts/texts.dart'; // 텍스트 스타일 임포트
 import 'package:ansim_app/constansts/constants.dart';
 import 'package:ansim_app/screens/auth/permission/permission_view_model.dart';
 import 'package:flutter/material.dart';

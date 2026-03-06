@@ -1,4 +1,4 @@
-import 'package:ansim_app/common/wigets/atom/texts/texts.dart';
+import 'package:ansim_app/common/widgets/atom/texts/texts.dart';
 import 'package:ansim_app/screens/auth/login_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
