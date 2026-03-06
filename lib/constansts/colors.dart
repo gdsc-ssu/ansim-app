@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 final class AnsimColor {
   // Brand Color
-  static const primary = Color(0xFFFF6B35);
+  static const primary = Color(0xFF2196F3);
 
   // Severity
   static const critical = Color(0xFFFF3B30);
