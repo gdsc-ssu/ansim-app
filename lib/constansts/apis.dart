@@ -7,4 +7,7 @@ abstract class Apis {
   static const String getGoogleAccessToken = "/auth/google";
   static const String reFreshToken = "/auth/refresh";
   static const String logOut = "/auth/logout";
+
+  /// 마커 관련 api
+  static const String markers = "/markers";
 }
