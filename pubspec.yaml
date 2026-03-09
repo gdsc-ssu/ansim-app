@@ -6,7 +6,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.10.8
+  sdk: ^3.4.3
 
 dependencies:
   flutter:
@@ -48,7 +48,7 @@ dependencies:
   freezed_annotation: ^2.0.3
 
   flutter_launcher_icons: ^0.13.1
-  permission_handler: ^12.0.1
+  permission_handler: ^11.3.1
 
 flutter_launcher_icons:
   android: "launcher_icon"
@@ -67,7 +67,7 @@ dev_dependencies:
   firebase_core: ^4.4.0
 
 
-  flutter_lints: ^6.0.0
+  flutter_lints: ^3.0.0
 
 flutter:
 
