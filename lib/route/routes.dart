@@ -5,7 +5,7 @@ import 'package:ansim_app/screens/map/map_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-final AppRouter = GoRouter(initialLocation: Paths.map, routes: [
+final AppRouter = GoRouter(initialLocation: Paths.permission, routes: [
   GoRoute(
       path: Paths.login,
       pageBuilder: (context, state) => MaterialPage(
