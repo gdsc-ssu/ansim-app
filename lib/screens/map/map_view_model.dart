@@ -6,6 +6,7 @@ class MapViewModel extends ChangeNotifier {
   bool isLoading = true;
   LatLng? currentLocation;
   GoogleMapController? mapController;
+  int currentIndex = 0;
 
   MapViewModel() {
     _initializeLocation();
@@ -29,5 +30,10 @@ class MapViewModel extends ChangeNotifier {
 
   void onMapCreated(GoogleMapController controller) {
     mapController = controller;
+  }
+
+  void changeTab(int index) {
+    currentIndex = index;
+    notifyListeners();
   }
 }
