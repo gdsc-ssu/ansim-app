@@ -40,7 +40,7 @@ dependencies:
 
   #토큰 저장소
   flutter_secure_storage: ^8.0.0
-  flutter_dotenv: ^5.2.0
+  flutter_dotenv: ^6.0.0
 
   #DI
   get_it: ^7.7.0
