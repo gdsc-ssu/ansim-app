@@ -1,147 +1,165 @@
-import 'package:ansim_app/common/widgets/ansim_button.dart';
-import 'package:ansim_app/constansts/constants.dart';
-import 'package:ansim_app/screens/map/map_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:ansim_app/screens/map/map_view_model.dart';
 
 class MapScreen extends StatelessWidget {
   const MapScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // ViewModel 구독 (listen: false는 버튼 클릭 등에서만 사용)
+    // ViewModel 인스턴스 생성 방식은 기존 코드를 유지합니다.
+    return ChangeNotifierProvider(
+      create: (_) => MapViewModel(),
+      child: const _MapScreenContent(),
+    );
+  }
+}
+
+class _MapScreenContent extends StatelessWidget {
+  const _MapScreenContent();
+
+  @override
+  Widget build(BuildContext context) {
     final viewModel = context.watch<MapViewModel>();
 
-    return Stack(
-      children: [
-        // 1. 배경 구글 맵
-        GoogleMap(
-          initialCameraPosition: CameraPosition(
-            target: viewModel.initialPosition,
-            zoom: 15,
-          ),
-          onMapCreated: viewModel.onMapCreated,
-          markers: viewModel.markers,
-          myLocationEnabled: true,
-          myLocationButtonEnabled: false,
-          zoomControlsEnabled: false,
-          mapToolbarEnabled: false,
-        ),
+    return Scaffold(
+      body: viewModel.isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Stack(
+              children: [
+                // 1. 배경이 되는 지도
+                GoogleMap(
+                  initialCameraPosition: CameraPosition(
+                    target: viewModel.currentLocation!,
+                    zoom: 15.0,
+                  ),
+                  onMapCreated: viewModel.onMapCreated,
+                  myLocationEnabled: true,
+                  myLocationButtonEnabled: false, // 커스텀 버튼 사용을 위해 끔
+                  zoomControlsEnabled: false,
+                ),
 
-        // 2. 상단 레이어 (검색바 + 필터)
-        SafeArea(
-          child: Column(
-            children: [
-              _buildSearchBar(),
-              const SizedBox(height: 8),
-              _buildCategoryChips(viewModel),
-            ],
-          ),
-        ),
+                // 2. 상단 검색 및 카테고리 영역
+                SafeArea(
+                  child: Column(
+                    children: [
+                      _buildTopSearchBar(),
+                      _buildCategoryChips(),
+                    ],
+                  ),
+                ),
 
-        // 3. 하단 신고하기 버튼 (중앙 하단)
-        Positioned(
-          bottom: 24,
-          left: 0,
-          right: 0,
-          child: Center(
-            child: SizedBox(
-              width: 160,
-              child: AnsimButton(
-                text: '신고하기',
-                onPressed: () {
-                  print("신고하기 클릭");
-                },
-              ),
+                // 3. 하단 중앙 '신고하기' 버튼
+                Positioned(
+                  bottom: 30,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: _buildReportButton(),
+                  ),
+                ),
+
+                // 4. 우측 하단 컨트롤러 레이아웃
+                Positioned(
+                  bottom: 100,
+                  right: 16,
+                  child: _buildMapControls(),
+                ),
+              ],
             ),
-          ),
-        ),
-
-        // 4. 우측 지도 컨트롤 (현재 위치 버튼 등)
-        Positioned(
-          right: 16,
-          bottom: 100,
-          child: FloatingActionButton(
-            mini: true,
-            backgroundColor: Colors.white,
-            onPressed: () {},
-            child: const Icon(Icons.my_location, color: Colors.blue),
-          ),
-        ),
-      ],
     );
   }
 
-  // 검색바 위젯 분리
-  Widget _buildSearchBar() {
+  // 상단 검색바 위젯
+  Widget _buildTopSearchBar() {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.symmetric(horizontal: 16),
       height: 50,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.white.withOpacity(0.9),
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 8)],
       ),
-      child: const Row(
+      child: Row(
         children: [
-          Icon(Icons.search, color: Colors.grey),
-          SizedBox(width: 10),
-          Expanded(
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: '장소, 주소 검색',
-                border: InputBorder.none,
-              ),
-            ),
-          ),
+          const Icon(Icons.search, color: Colors.grey),
+          const SizedBox(width: 10),
+          const Text("장소, 주소 검색", style: TextStyle(color: Colors.grey)),
         ],
       ),
     );
   }
 
-  // 카테고리 필터 칩 리스트
-  Widget _buildCategoryChips(MapViewModel viewModel) {
-    final categories = ['전체', '싱크홀', '도로파손', '시설물', '기타'];
+  // 카테고리 칩 리스트
+  Widget _buildCategoryChips() {
+    final categories = ["전체", "싱크홀", "도로파손", "붕괴위험", "시설물"];
     return SizedBox(
       height: 40,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         itemCount: categories.length,
         itemBuilder: (context, index) {
-          final category = categories[index];
-          final isSelected = viewModel.selectedCategory == category;
-
-          return Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: FilterChip(
-              label: Text(category),
-              selected: isSelected,
-              onSelected: (_) => viewModel.selectCategory(category),
-              backgroundColor: Colors.white,
-              selectedColor: Colors.blue.shade100,
-              checkmarkColor: Colors.blue,
-              labelStyle: TextStyle(
-                color: isSelected ? Colors.blue : Colors.black87,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          bool isSelected = index == 0; // 예시로 첫번째만 활성화
+          return Container(
+            margin: const EdgeInsets.only(right: 8),
+            child: Chip(
+              backgroundColor: isSelected ? Colors.blue : Colors.white,
+              label: Text(
+                categories[index],
+                style:
+                    TextStyle(color: isSelected ? Colors.white : Colors.black),
               ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-                side: BorderSide(
-                  color: isSelected ? Colors.blue : Colors.grey.shade300,
-                ),
-              ),
+              side: BorderSide.none,
+              elevation: 2,
             ),
           );
         },
+      ),
+    );
+  }
+
+  // 신고하기 버튼
+  Widget _buildReportButton() {
+    return ElevatedButton.icon(
+      onPressed: () {},
+      icon: const Icon(Icons.camera_alt_outlined),
+      label: const Text("신고하기",
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.blue,
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+      ),
+    );
+  }
+
+  // 우측 맵 컨트롤 버튼들
+  Widget _buildMapControls() {
+    return Column(
+      children: [
+        _mapIconButton(Icons.bookmark_border),
+        const SizedBox(height: 8),
+        _mapIconButton(Icons.add),
+        _mapIconButton(Icons.remove),
+        const SizedBox(height: 8),
+        _mapIconButton(Icons.my_location),
+      ],
+    );
+  }
+
+  Widget _mapIconButton(IconData icon) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 2),
+      child: FloatingActionButton.small(
+        heroTag: null, // 여러개일 경우 heroTag 충돌 방지
+        onPressed: () {},
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        child: Icon(icon),
       ),
     );
   }

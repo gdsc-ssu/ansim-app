@@ -6,7 +6,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.10.8
+  sdk: ^3.4.3
 
 dependencies:
   flutter:
@@ -33,6 +33,10 @@ dependencies:
 
   #구글 로그인
   google_sign_in: ^6.2.1
+
+  #구글 지도
+  google_maps_flutter: ^2.10.0
+  geolocator: ^13.0.1
 
   #토큰 저장소
   flutter_secure_storage: ^8.0.0
@@ -65,10 +69,9 @@ dev_dependencies:
   build_runner: ^2.4.11
   freezed: ^2.0.3
   firebase_messaging: ^16.1.1
-  firebase_core: ^4.4.0
 
 
-  flutter_lints: ^6.0.0
+  flutter_lints: ^3.0.0
 
 flutter:
 
