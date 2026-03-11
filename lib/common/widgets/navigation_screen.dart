@@ -33,8 +33,8 @@ class NavigationScreen extends StatelessWidget {
 
         selectedItemColor: AnsimColor.primary,
         unselectedItemColor: Colors.grey,
-        selectedLabelStyle: AnsimTextStyle.buttonB3,
-        unselectedLabelStyle: AnsimTextStyle.buttonB3,
+        selectedLabelStyle: AnsimTextStyle.buttonB1,
+        unselectedLabelStyle: AnsimTextStyle.buttonB1,
         showSelectedLabels: true,
         showUnselectedLabels: true,
         type: BottomNavigationBarType.fixed,
