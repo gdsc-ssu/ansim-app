@@ -1,6 +1,9 @@
+import 'package:ansim_app/constansts/colors.dart';
+import 'package:ansim_app/common/widgets/atom/texts/texts.dart';
 import 'package:ansim_app/screens/map/map_screen.dart';
 import 'package:ansim_app/screens/map/map_view_model.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 
 class NavigationScreen extends StatelessWidget {
@@ -28,27 +31,29 @@ class NavigationScreen extends StatelessWidget {
         currentIndex: viewModel.currentIndex,
         onTap: (index) => viewModel.changeTab(index),
 
-        selectedItemColor: Colors.blue,
+        selectedItemColor: AnsimColor.primary,
         unselectedItemColor: Colors.grey,
+        selectedLabelStyle: AnsimTextStyle.buttonB3,
+        unselectedLabelStyle: AnsimTextStyle.buttonB3,
         showSelectedLabels: true,
         showUnselectedLabels: true,
         type: BottomNavigationBarType.fixed,
         backgroundColor: Colors.white,
 
-        items: const [
+        items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.map_outlined),
-            activeIcon: Icon(Icons.map),
+            icon: SvgPicture.asset('assets/icons/map_off.svg'),
+            activeIcon: SvgPicture.asset('assets/icons/map.svg'),
             label: '지도',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.notifications_none_outlined),
-            activeIcon: Icon(Icons.notifications),
+            icon: SvgPicture.asset('assets/icons/alarm_off.svg'),
+            activeIcon: SvgPicture.asset('assets/icons/alarm.svg'),
             label: '알림',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            activeIcon: Icon(Icons.person),
+            icon: SvgPicture.asset('assets/icons/mypage_off.svg'),
+            activeIcon: SvgPicture.asset('assets/icons/mypage.svg'),
             label: '마이페이지',
           ),
         ],
