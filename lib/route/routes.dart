@@ -1,7 +1,7 @@
 import 'package:ansim_app/constansts/paths.dart';
 import 'package:ansim_app/screens/auth/login_screen.dart';
 import 'package:ansim_app/screens/auth/permission/permission_screen.dart';
-import 'package:ansim_app/screens/map/map_screen.dart';
+import 'package:ansim_app/common/widgets/navigation_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -22,6 +22,6 @@ final AppRouter = GoRouter(initialLocation: Paths.permission, routes: [
       path: Paths.map,
       pageBuilder: (context, state) => MaterialPage(
             key: state.pageKey,
-            child: const MapScreen(),
+            child: const NavigationScreen(),
           )),
 ]);
