@@ -16,7 +16,7 @@ class PermissionViewModel extends ChangeNotifier {
     // 2. 필수 권한(위치) 확인
     if (statuses[Permission.locationWhenInUse]!.isGranted) {
       print("위치 권한 허용됨");
-      context.push(Paths.home);
+      context.push(Paths.map);
     } else if (statuses[Permission.locationWhenInUse]!.isPermanentlyDenied) {
       // 사용자가 '다시 묻지 않음'을 선택한 경우 설정창으로 유도
       _showPermissionDialog(context);

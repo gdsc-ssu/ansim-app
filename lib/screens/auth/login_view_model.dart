@@ -19,7 +19,7 @@ class LoginViewModel extends ChangeNotifier {
       print("로그인 성공!");
 
       // 로그인 성공 후 메인 화면으로 이동 (예시)
-      // Navigator.pushReplacementNamed(context, '/home');
+      // Navigator.pushReplacementNamed(context, '/map');
 
     } catch (e) {
       print("로그인 실패: $e");

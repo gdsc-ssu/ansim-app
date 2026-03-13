@@ -1,4 +1,4 @@
-import 'package:ansim_app/common/wigets/atom/texts/texts.dart';
+import 'package:ansim_app/common/widgets/atom/texts/texts.dart';
 import 'package:ansim_app/constansts/constants.dart';
 import 'package:flutter/material.dart';
 
