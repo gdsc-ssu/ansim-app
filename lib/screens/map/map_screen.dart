@@ -164,8 +164,6 @@ class _MapScreenContent extends StatelessWidget {
   Widget _buildMapControls(MapViewModel viewModel) {
     return Column(
       children: [
-        _mapIconButton(Icons.bookmark_border, () {}),
-        const SizedBox(height: 8),
         _mapIconButton(Icons.add, viewModel.zoomIn),
         _mapIconButton(Icons.remove, viewModel.zoomOut),
         const SizedBox(height: 8),
