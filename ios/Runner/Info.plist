@@ -47,6 +47,12 @@
 			</array>
 		</dict>
 	</dict>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>주변 안전 정보를 확인하기 위해 위치 권한이 필요합니다.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>주변 안전 정보를 확인하기 위해 위치 권한이 필요합니다.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>제보 사진 촬영을 위해 카메라 권한이 필요합니다.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
