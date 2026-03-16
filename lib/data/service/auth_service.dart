@@ -16,7 +16,7 @@ class AuthService {
     try {
       final response = await _apiClient.dio.post(
         Apis.getGoogleAccessToken,
-        queryParameters: {
+        data: {
           'idToken': authCode,
         },
         options: Options(

@@ -46,6 +46,7 @@ class LoginViewModel extends ChangeNotifier {
 
     final GoogleSignIn googleSignIn = GoogleSignIn(
       clientId: clientId,
+      serverClientId: dotenv.get("WEB_CLIENT_ID"),
       scopes: ['email', 'profile'],
     );
 
@@ -74,7 +75,7 @@ class LoginViewModel extends ChangeNotifier {
       log("accessToken: ${googleAuth.accessToken}");
       log("idToken: ${googleAuth.idToken}");
 
-      final authCode = googleAuth.accessToken;
+      final authCode = googleAuth.idToken;
 
       if (authCode == null || authCode.isEmpty) {
         log('❌ accessToken이 null입니다!');
