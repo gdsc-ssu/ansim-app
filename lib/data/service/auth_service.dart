@@ -4,7 +4,9 @@ import 'package:ansim_app/constansts/apis.dart';
 import 'package:ansim_app/data/di/api_client.dart';
 import 'package:ansim_app/data/dto/response/token_response.dart';
 import 'package:ansim_app/data/repository/local/secure_storage_repository.dart';
+import 'package:ansim_app/screens/auth/auth_provider.dart';
 import 'package:dio/dio.dart';
+import 'package:get_it/get_it.dart';
 
 class AuthService {
   final ApiClient _apiClient = ApiClient();
@@ -31,6 +33,8 @@ class AuthService {
         // SecureStorage에 저장
         await _secureStorage.saveAccessToken(tokenResponse.accessToken);
         await _secureStorage.saveRefreshToken(tokenResponse.refreshToken);
+
+        GetIt.I<AuthProvider>().checkLoginStatus();
 
         log("accessToken ${tokenResponse.accessToken} refreshtoken ${tokenResponse.refreshToken}");
         return tokenResponse;

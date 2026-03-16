@@ -127,8 +127,9 @@ class LoginViewModel extends ChangeNotifier {
 
   Future<void> _saveUserInfo(String? name, String? email) async {
     final SecureStorageRepository secureStorage = SecureStorageRepository();
-    secureStorage.saveUserName(name ?? '');
-    secureStorage.saveUserEmail(email ?? '');
+    await secureStorage.saveUserName(name ?? '');
+    await secureStorage.saveUserEmail(email ?? '');
+    await secureStorage.saveIsLoggedIn(true);
   }
 
 

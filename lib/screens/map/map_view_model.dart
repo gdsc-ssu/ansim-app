@@ -1,8 +1,11 @@
+import 'package:ansim_app/data/repository/local/secure_storage_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class MapViewModel extends ChangeNotifier {
+  final SecureStorageRepository _secureStorage = SecureStorageRepository();
+
   bool isLoading = true;
   LatLng? currentLocation;
   GoogleMapController? mapController;
@@ -75,5 +78,9 @@ class MapViewModel extends ChangeNotifier {
     selectedCategoryIndex = index;
     notifyListeners();
     // TODO: 카테고리 선택에 따른 추가 액션 구현
+  }
+
+  Future<bool> checkIsLoggedIn() async {
+    return await _secureStorage.readIsLoggedIn();
   }
 }
