@@ -21,6 +21,42 @@ class SecureStorageRepository {
   }
 
 
+  ///유저 정보
+  Future<String?> readUserName() async {
+    return await _storage.read(key: "user_name");
+  }
+
+  Future<void> saveUserName(String name) async {
+    await _storage.write(key: "user_name", value: name);
+  }
+
+  Future<void> saveUserEmail(String email) async {
+    await _storage.write(key: "user_email", value: email);
+  }
+
+  Future<String?> readUserEmail() async {
+    return await _storage.read(key: "user_email");
+  }
+
+  Future<void> saveUserId(int userId) async {
+    await _storage.write(key: 'userId', value: userId.toString());
+  }
+
+  Future<int?> getUserId() async {
+    final value = await _storage.read(key: 'userId');
+    return value != null ? int.tryParse(value) : null;
+  }
+
+  ///로그인 상태
+  Future<void> saveIsLoggedIn(bool isLoggedIn) async {
+    await _storage.write(key: "is_logged_in", value: isLoggedIn.toString());
+  }
+
+  Future<bool> readIsLoggedIn() async {
+    final value = await _storage.read(key: "is_logged_in");
+    return value == "true";
+  }
+
   ///모든 데이터 삭제
   Future<void> deleteAllData() async {
     await _storage.deleteAll();

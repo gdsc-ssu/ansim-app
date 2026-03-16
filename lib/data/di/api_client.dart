@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:ansim_app/data/repository/local/secure_storage_repository.dart';
+import 'package:ansim_app/screens/auth/auth_provider.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get_it/get_it.dart';
@@ -93,8 +94,12 @@ class ApiClient {
             return handler.resolve(clonedRequest);
           } catch (refreshError) {
             log('[Interceptor] 토큰 재발급 실패: $refreshError');
+            GetIt.I<AuthProvider>().logout();
             return handler.reject(e);
           }
+        } else if (e.response?.statusCode == 403) {
+          log('[Interceptor] 403 에러 발생. 로그아웃 처리');
+          GetIt.I<AuthProvider>().logout();
         }
 
         return handler.next(e);

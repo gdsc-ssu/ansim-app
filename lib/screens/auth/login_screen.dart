@@ -1,7 +1,9 @@
 import 'package:ansim_app/common/widgets/atom/texts/texts.dart';
+import 'package:ansim_app/constansts/paths.dart';
 import 'package:ansim_app/screens/auth/login_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -42,7 +44,27 @@ class _LoginScreenState extends State<LoginScreen> {
               _viewModel.isLoading
                   ? const CircularProgressIndicator()
                   : GestureDetector(
-                onTap: () => _viewModel.signInWithGoogle(context),
+                onTap: () async {
+                  try {
+                    await _viewModel.signInWithGoogle(context);
+                    if (!context.mounted) return;
+
+                    if (_viewModel.errorMessage == null) {
+                      context.go(Paths.map);
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(_viewModel.errorMessage!)),
+                      );
+                    }
+                  } catch (e) {
+                    if (!context.mounted) return;
+                    if (_viewModel.errorMessage != null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(_viewModel.errorMessage!)),
+                      );
+                    }
+                  }
+                },
                 child: SvgPicture.asset(
                   'assets/images/img_google_login.svg',
                   height: 56,
@@ -51,7 +73,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
 
               TextButton(
-                onPressed: () {},
+                onPressed: () => context.go(Paths.map),
                 child: const Text('둘러보기', style: AnsimTextStyle.tabLable),
               ),
               const SizedBox(height: 20),
