@@ -9,7 +9,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-final AppRouter = GoRouter(initialLocation: Paths.map , routes: [
+final AppRouter = GoRouter(initialLocation: Paths.map, routes: [
   GoRoute(
       path: Paths.login,
       pageBuilder: (context, state) => MaterialPage(

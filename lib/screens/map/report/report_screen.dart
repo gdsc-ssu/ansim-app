@@ -140,7 +140,7 @@ class _ReportScreenState extends State<ReportScreen> {
     return Wrap(
       spacing: 8,
       children: categories.map((type) {
-        final isSelected = viewModel.selectedType == type;
+        final isSelected = viewModel.selectedTypeStr == type;
         return ChoiceChip(
           label: Text(type),
           selected: isSelected,
@@ -163,7 +163,7 @@ class _ReportScreenState extends State<ReportScreen> {
     return Row(
       children: List.generate(levels.length, (index) {
         final level = levels[index];
-        final isSelected = viewModel.selectedLevel == level;
+        final isSelected = viewModel.selectedLevelStr == level;
         return Expanded(
           child: GestureDetector(
             onTap: () => viewModel.setLevel(level),
