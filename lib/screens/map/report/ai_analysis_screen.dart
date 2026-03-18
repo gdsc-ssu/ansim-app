@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:ansim_app/common/widgets/atom/texts/texts.dart';
 import 'package:ansim_app/common/widgets/basic_app_bar.dart';
 import 'package:ansim_app/constansts/colors.dart';
+import 'package:ansim_app/constansts/paths.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -41,7 +42,10 @@ class _AiAnalysisScreenState extends State<AiAnalysisScreen> {
       await Future.delayed(const Duration(seconds: 1));
       setState(() => _currentStep = 3);
 
-      // 분석 완료 후 다음 화면(결과 화면)으로 이동 로직 추가 가능
+      context.push(
+        Paths.report,
+        extra: widget.image,
+      );
     } catch (e) {
       // 에러 처리
     }

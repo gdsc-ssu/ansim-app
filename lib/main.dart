@@ -10,12 +10,18 @@ import 'package:get_it/get_it.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  // 환경변수 로드
-  await dotenv.load(fileName: ".env");
-  
-  // 의존성 주입 설정
-  setupServiceLocator();
+
+  try {
+    // 2. 환경변수 로드
+    await dotenv.load(fileName: ".env");
+
+    // 3. DI 설정
+    setupServiceLocator();
+
+    debugPrint("앱 초기화 완료");
+  } catch (e) {
+    debugPrint("초기화 과정 중 에러 발생: $e");
+  }
 
   runApp(
       MultiProvider(
