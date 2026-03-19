@@ -1,3 +1,5 @@
+import 'package:ansim_app/common/enums/hazard_level.dart';
+import 'package:ansim_app/common/widgets/custom_maker.dart';
 import 'package:ansim_app/constansts/colors.dart';
 import 'package:ansim_app/constansts/paths.dart';
 import 'package:flutter/material.dart';
@@ -19,13 +21,55 @@ class MapScreen extends StatelessWidget {
   }
 }
 
-class _MapScreenContent extends StatelessWidget {
+class _MapScreenContent extends StatefulWidget {
   const _MapScreenContent();
+
+  @override
+  State<_MapScreenContent> createState() => _MapScreenContentState();
+}
+
+class _MapScreenContentState extends State<_MapScreenContent> {
+  bool _markersLoaded = false;
+
+  Future<void> _loadTestMarkers(MapViewModel viewModel) async {
+    final base = viewModel.currentLocation!;
+
+    // 테스트용 마커 데이터: 현재 위치 주변에 각 HazardLevel 하나씩
+    final testData = [
+      (LatLng(base.latitude + 0.001, base.longitude), HazardLevel.HIGH),
+      (LatLng(base.latitude, base.longitude + 0.001), HazardLevel.MEDIUM),
+      (LatLng(base.latitude - 0.001, base.longitude), HazardLevel.LOW),
+      (LatLng(base.latitude, base.longitude - 0.001), HazardLevel.UNKNOWN),
+    ];
+
+    final markers = <Marker>{};
+    for (var i = 0; i < testData.length; i++) {
+      if (!mounted) return;
+      final (latLng, level) = testData[i];
+      final icon = await widgetToMarkerIcon(customMarker(level), context);
+      markers.add(Marker(
+        markerId: MarkerId('test_marker_$i'),
+        position: latLng,
+        icon: icon,
+        infoWindow: InfoWindow(title: level.koLabel),
+      ));
+    }
+
+    if (mounted) viewModel.setMarkers(markers);
+  }
 
   @override
   Widget build(BuildContext context) {
     // watch allows the widget to rebuild when notifyListeners() is called in VM
     final viewModel = context.watch<MapViewModel>();
+
+    // 위치 로딩 완료 시 마커 생성
+    if (!viewModel.isLoading && viewModel.currentLocation != null && !_markersLoaded) {
+      _markersLoaded = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _loadTestMarkers(viewModel);
+      });
+    }
 
     return Scaffold(
       body: viewModel.isLoading || viewModel.currentLocation == null
@@ -42,8 +86,7 @@ class _MapScreenContent extends StatelessWidget {
             myLocationEnabled: true,
             myLocationButtonEnabled: false,
             zoomControlsEnabled: false,
-            // Add markers here if your ViewModel has them
-            // markers: viewModel.markers,
+            markers: viewModel.markers,
           ),
 
           // 2. Top UI (Search & Categories)

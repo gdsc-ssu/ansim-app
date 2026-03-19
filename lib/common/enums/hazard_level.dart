@@ -55,4 +55,13 @@ extension HazardLevelExtension on HazardLevel {
       case HazardLevel.UNKNOWN: return Icons.add;
     }
   }
+
+  String get iconPath {
+    switch (this) {
+    case HazardLevel.HIGH: return 'assets/icons/critical.svg';
+    case HazardLevel.MEDIUM: return 'assets/icons/warning.svg';
+    case HazardLevel.LOW: return 'assets/icons/resolved.svg';
+    case HazardLevel.UNKNOWN: return 'assets/icons/minor.svg';
+    }
+  }
 }
