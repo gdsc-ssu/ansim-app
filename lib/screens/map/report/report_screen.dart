@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:ansim_app/common/enums/hazard_type.dart';
 import 'package:ansim_app/common/widgets/ansim_button.dart';
 import 'package:ansim_app/common/widgets/atom/texts/texts.dart';
 import 'package:ansim_app/common/widgets/basic_app_bar.dart';
@@ -135,26 +136,39 @@ class _ReportScreenState extends State<ReportScreen> {
     );
   }
 
-  Widget _buildTypeSelector(ReportViewModel viewModel) {
-    final categories = ["싱크홀", "도로파손", "붕괴위험", "시설물", "기타"];
-    return Wrap(
-      spacing: 8,
-      children: categories.map((type) {
-        final isSelected = viewModel.selectedTypeStr == type;
-        return ChoiceChip(
-          label: Text(type),
-          selected: isSelected,
-          onSelected: (_) => viewModel.setType(type),
-          selectedColor: AnsimColor.primary,
-          labelStyle: TextStyle(color: isSelected ? Colors.white : Colors.black54),
-          showCheckmark: false,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          side: BorderSide.none,
-          backgroundColor: Colors.grey.shade100,
-        );
-      }).toList(),
-    );
-  }
+Widget _buildTypeSelector(ReportViewModel viewModel) {
+  // HazardType 모델에서 정의한 라벨 리스트를 가져옵니다.
+  final categories = HazardType.reportLabels;
+
+  return Wrap(
+    spacing: 8.0,      // 가로 간격
+    runSpacing: 8.0,   // 줄바꿈 시 세로 간격
+    children: categories.map((label) {
+      final isSelected = viewModel.selectedTypeStr == label;
+
+      return ChoiceChip(
+        label: Text(label),
+        selected: isSelected,
+        onSelected: (selected) {
+          if (selected) {
+            viewModel.setType(label);
+          }
+        },
+        selectedColor: AnsimColor.primary, // 선택 시 배경색
+        labelStyle: AnsimTextStyle.buttonB2.copyWith(
+          color: isSelected ? Colors.white : AnsimColor.textSecondary,
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+        ),
+        showCheckmark: false,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        side: BorderSide.none,
+        backgroundColor: AnsimColor.bgSecondary, // 미선택 시 배경색
+      );
+    }).toList(),
+  );
+}
 
   Widget _buildLevelSelector(ReportViewModel viewModel) {
     final levels = ["심각", "주의", "경미"];
