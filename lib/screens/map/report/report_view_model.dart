@@ -4,6 +4,7 @@ import 'package:ansim_app/data/dto/response/analysis_response.dart';
 import 'package:ansim_app/data/service/analysis_service.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class ReportViewModel extends ChangeNotifier {
@@ -22,6 +23,10 @@ class ReportViewModel extends ChangeNotifier {
   String _address = "서울 강동구 천호대로 42길";
   final TextEditingController descriptionController = TextEditingController();
 
+  // --- 3. 위치 데이터 ---
+  double? latitude;
+  double? longitude;
+
   // --- Getters ---
   CameraController? get controller => _controller;
   bool get isInitialized => _isInitialized;
@@ -35,6 +40,8 @@ class ReportViewModel extends ChangeNotifier {
 
   // --- 카메라 로직 ---
   Future<void> initializeCamera() async {
+    _fetchCurrentLocation();
+
     final status = await Permission.camera.request();
     if (status.isGranted) {
       final cameras = await availableCameras();
@@ -53,6 +60,20 @@ class ReportViewModel extends ChangeNotifier {
       } catch (e) {
         debugPrint("카메라 초기화 에러: $e");
       }
+    }
+  }
+
+  Future<void> _fetchCurrentLocation() async {
+    try {
+      final position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
+      );
+      latitude = position.latitude;
+      longitude = position.longitude;
+      debugPrint('현재 위치: lat=$latitude, lng=$longitude');
+      notifyListeners();
+    } catch (e) {
+      debugPrint('위치 조회 실패: $e');
     }
   }
 
@@ -121,7 +142,7 @@ class ReportViewModel extends ChangeNotifier {
 
     try {
       // TODO: 최종 신고 API 호출 로직 (_hazardType.name, _hazardLevel.name 사용)
-      debugPrint("서버 전송: ${_hazardType.name} / ${_hazardLevel.name} / $_address");
+      debugPrint("서버 전송: ${_hazardType.name} / ${_hazardLevel.name} / $_address / lat=$latitude, lng=$longitude");
       return true;
     } catch (e) {
       debugPrint("신고 제출 에러: $e");
