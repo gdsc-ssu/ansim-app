@@ -5,9 +5,11 @@ import 'package:ansim_app/common/widgets/navigation_screen.dart';
 import 'package:ansim_app/screens/map/report/ai_analysis_screen.dart';
 import 'package:ansim_app/screens/map/report/camera_screen.dart';
 import 'package:ansim_app/screens/map/report/report_screen.dart';
+import 'package:ansim_app/screens/map/report/report_view_model.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 final AppRouter = GoRouter(initialLocation: Paths.login, routes: [
   GoRoute(
@@ -52,7 +54,10 @@ final AppRouter = GoRouter(initialLocation: Paths.login, routes: [
 
       return MaterialPage(
         key: state.pageKey,
-        child: ReportScreen(image: image),
+        child: ChangeNotifierProvider(
+          create: (_) => ReportViewModel(),
+          child: ReportScreen(image: image),
+        ),
       );
     },
   ),

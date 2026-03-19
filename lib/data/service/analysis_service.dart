@@ -17,33 +17,29 @@ class AnalysisService {
       final fileSize = await file.length();
 
       final urlResponse = await _apiClient.dio.post(
-        '/api/images/signed-url',
+        Apis.imageSignedUrl,
         data: {
           "fileName": fileName,
-          "contentType": "image/jpg", // 필요 시 확장자에 따라 가변 처리
+          "contentType": "image/jpeg", // 필요 시 확장자에 따라 가변 처리
           "fileSize": fileSize,
         },
       );
 
-      final String signedUrl = urlResponse.data['signedUrl'];
       final String publicUrl = urlResponse.data['publicUrl'];
 
-      // 2. 받은 Signed URL로 실제 이미지 파일 업로드 (PUT 방식)
-      // 이 때는 ApiClient의 기본 설정(BaseUrl 등)을 타지 않도록 별도의 Dio 객체나 Full URL 사용
-      await Dio().put(
-        signedUrl,
-        data: file.openRead(),
-        options: Options(
-          headers: {
-            Headers.contentLengthHeader: fileSize,
-            "Content-Type": "image/jpeg",
-          },
-        ),
+      // 2. 이미지 저장 API 호출
+      await _apiClient.dio.post(
+        Apis.image,
+        data: {
+          'url': publicUrl,
+          'mimeType': 'image/jpeg',
+          'size': fileSize,
+        },
       );
 
-      log("이미지 업로드 성공: $publicUrl");
+      log("이미지 저장 완료: $publicUrl");
 
-      // 3. 업로드된 Public URL을 리스트에 담아 분석 API 호출
+      // 4. 업로드된 Public URL을 리스트에 담아 분석 API 호출
       return await _analyzeHazard(publicUrl);
 
     } on DioException catch (e) {
