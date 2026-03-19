@@ -28,8 +28,8 @@ class MarkerResponse {
     return MarkerResponse(
       id: json['id'] as String,
       source: json['source'] as String,
-      latitude: (json['latitude'] as num).toDouble(),
-      longitude: (json['longitude'] as num).toDouble(),
+      latitude: double.parse(json['latitude'].toString()),
+      longitude: double.parse(json['longitude'].toString()),
       hazardType: HazardType.fromString(json['hazardType'] as String?),
       hazardLevel: HazardLevel.fromString(json['hazardLevel'] as String? ?? ''),
       likeCount: (json['likeCount'] as num?)?.toInt() ?? 0,
