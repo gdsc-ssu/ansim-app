@@ -13,5 +13,5 @@ abstract class Apis {
 
 
   /// 마커 관련 api
-  static const String markers = "/markers";
+  static const String markers = "api/markers";
 }
