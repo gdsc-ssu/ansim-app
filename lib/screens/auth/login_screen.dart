@@ -4,6 +4,7 @@ import 'package:ansim_app/screens/auth/login_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -21,6 +22,16 @@ class _LoginScreenState extends State<LoginScreen> {
     _viewModel.addListener(() {
       if (mounted) setState(() {});
     });
+  }
+
+  Future<void> _navigateAfterLogin(BuildContext context) async {
+    final status = await Permission.locationWhenInUse.status;
+    if (!context.mounted) return;
+    if (status.isGranted) {
+      context.go(Paths.map);
+    } else {
+      context.go(Paths.permission);
+    }
   }
 
   @override
@@ -50,7 +61,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     if (!context.mounted) return;
 
                     if (_viewModel.errorMessage == null) {
-                      context.go(Paths.map);
+                      await _navigateAfterLogin(context);
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text(_viewModel.errorMessage!)),
@@ -73,7 +84,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
 
               TextButton(
-                onPressed: () => context.go(Paths.map),
+                onPressed: () => _navigateAfterLogin(context),
                 child: const Text('둘러보기', style: AnsimTextStyle.tabLable),
               ),
               const SizedBox(height: 20),
