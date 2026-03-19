@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:ansim_app/constansts/apis.dart';
 import 'package:ansim_app/data/di/api_client.dart';
 import 'package:ansim_app/data/dto/response/marker_response.dart';
+import 'package:ansim_app/data/dto/response/report_response.dart';
 import 'package:dio/dio.dart';
 
 class MarkerService {
@@ -31,6 +32,16 @@ class MarkerService {
           .toList();
     } catch (e) {
       log('[MarkerService] 마커 조회 실패: $e');
+      rethrow;
+    }
+  }
+
+  Future<ReportResponse> getReport(String id) async {
+    try {
+      final response = await _apiClient.dio.get('${Apis.markers}/$id');
+      return ReportResponse.fromJson(response.data as Map<String, dynamic>);
+    } catch (e) {
+      log('[ReportService] 신고 단건 조회 실패: $e');
       rethrow;
     }
   }

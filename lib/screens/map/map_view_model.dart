@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:ansim_app/data/dto/response/marker_response.dart';
+import 'package:ansim_app/data/dto/response/report_response.dart';
 import 'package:ansim_app/data/repository/local/secure_storage_repository.dart';
 import 'package:ansim_app/data/service/marker_service.dart';
 import 'package:flutter/material.dart';
@@ -20,6 +21,9 @@ class MapViewModel extends ChangeNotifier {
 
   Set<Marker> markers = {};
   List<MarkerResponse> markerModels = [];
+
+  ReportResponse? selectedReport;
+  bool isLoadingReport = false;
 
   StreamSubscription<Position>? _locationSubscription;
 
@@ -130,6 +134,25 @@ class MapViewModel extends ChangeNotifier {
     selectedCategoryIndex = index;
     notifyListeners();
     // TODO: 카테고리 선택에 따른 추가 액션 구현
+  }
+
+  Future<void> fetchReport(String id) async {
+    isLoadingReport = true;
+    selectedReport = null;
+    notifyListeners();
+    try {
+      selectedReport = await _markerService.getReport(id);
+    } catch (e) {
+      debugPrint('[MapViewModel] 신고 조회 실패: $e');
+    } finally {
+      isLoadingReport = false;
+      notifyListeners();
+    }
+  }
+
+  void clearSelectedReport() {
+    selectedReport = null;
+    notifyListeners();
   }
 
   Future<bool> checkIsLoggedIn() async {
