@@ -37,7 +37,6 @@ enum HazardLevel {
   }
 }
 
-// enum 바로 아래에 작성
 extension HazardLevelExtension on HazardLevel {
   Color get color {
     switch (this) {
