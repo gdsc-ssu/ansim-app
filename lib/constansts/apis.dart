@@ -18,7 +18,6 @@ abstract class Apis {
 
   /// 이미지 관련 api
   static const String imageSignedUrl = "/api/images/signed-url";
-  static const String image = "/api/images";
 
 
 }
