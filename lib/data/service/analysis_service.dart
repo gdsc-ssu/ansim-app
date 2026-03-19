@@ -25,21 +25,25 @@ class AnalysisService {
         },
       );
 
+      final String signedUrl = urlResponse.data['signedUrl'];
       final String publicUrl = urlResponse.data['publicUrl'];
 
-      // 2. 이미지 저장 API 호출
-      await _apiClient.dio.post(
-        Apis.image,
-        data: {
-          'url': publicUrl,
-          'mimeType': 'image/jpeg',
-          'size': fileSize,
-        },
+      // 2. Signed URL로 GCS에 파일 직접 업로드
+      await Dio().put(
+        signedUrl,
+        data: file.openRead(),
+        options: Options(
+          headers: {
+            Headers.contentLengthHeader: fileSize,
+            'Content-Type': 'image/jpeg',
+            'x-goog-content-length-range': '0,$fileSize',
+          },
+        ),
       );
 
-      log("이미지 저장 완료: $publicUrl");
+      log("GCS 업로드 완료: $publicUrl");
 
-      // 4. 업로드된 Public URL을 리스트에 담아 분석 API 호출
+      // 3. AI 분석 API 호출
       return await _analyzeHazard(publicUrl);
 
     } on DioException catch (e) {
