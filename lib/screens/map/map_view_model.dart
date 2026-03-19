@@ -13,6 +13,13 @@ class MapViewModel extends ChangeNotifier {
   int selectedCategoryIndex = 0;
   final List<String> categories = ["전체", "싱크홀", "도로파손", "붕괴위험", "시설물"];
 
+  Set<Marker> markers = {};
+
+  void setMarkers(Set<Marker> newMarkers) {
+    markers = newMarkers;
+    notifyListeners();
+  }
+
   MapViewModel() {
     _initializeLocation();
   }
