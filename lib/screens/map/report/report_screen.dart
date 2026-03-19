@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:ansim_app/common/enums/hazard_level.dart';
 import 'package:ansim_app/common/enums/hazard_type.dart';
 import 'package:ansim_app/common/widgets/ansim_button.dart';
 import 'package:ansim_app/common/widgets/atom/texts/texts.dart';
@@ -170,38 +171,54 @@ Widget _buildTypeSelector(ReportViewModel viewModel) {
   );
 }
 
-  Widget _buildLevelSelector(ReportViewModel viewModel) {
-    final levels = ["심각", "주의", "경미"];
-    final colors = [const Color(0xFFFF4D4D), const Color(0xFFFFB347), const Color(0xFF4CAF50)];
+Widget _buildLevelSelector(ReportViewModel viewModel) {
+  // Enum 내부에 정의한 리스트를 바로 가져옵니다.
+  final levels = HazardLevel.reportLevels;
 
-    return Row(
-      children: List.generate(levels.length, (index) {
-        final level = levels[index];
-        final isSelected = viewModel.selectedLevelStr == level;
-        return Expanded(
-          child: GestureDetector(
-            onTap: () => viewModel.setLevel(level),
-            child: Container(
-              margin: EdgeInsets.only(right: index == 2 ? 0 : 8),
-              height: 44,
-              decoration: BoxDecoration(
-                color: isSelected ? colors[index] : Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(15),
-              ),
-              alignment: Alignment.center,
-              child: Text(
-                level,
-                style: AnsimTextStyle.buttonB2.copyWith(
-                  color: isSelected ? Colors.white : Colors.black54,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                ),
+  return Row(
+    children: levels.map((level) {
+      final isSelected = viewModel.selectedLevelStr == level.koLabel;
+
+      // 색상 결정 로직
+      Color activeColor;
+      switch (level) {
+        case HazardLevel.HIGH:
+          activeColor = const Color(0xFFFF4D4D);
+          break;
+        case HazardLevel.MEDIUM:
+          activeColor = const Color(0xFFFFB347);
+          break;
+        case HazardLevel.LOW:
+          activeColor = const Color(0xFF4CAF50);
+          break;
+        default:
+          activeColor = AnsimColor.primary;
+      }
+
+      return Expanded(
+        child: GestureDetector(
+          onTap: () => viewModel.setLevel(level.koLabel),
+          child: Container(
+            margin: EdgeInsets.only(right: level == levels.last ? 0 : 8),
+            height: 44,
+            decoration: BoxDecoration(
+              color: isSelected ? activeColor : AnsimColor.bgSecondary,
+              borderRadius: BorderRadius.circular(15),
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              level.koLabel,
+              style: AnsimTextStyle.buttonB2.copyWith(
+                color: isSelected ? Colors.white : AnsimColor.textSecondary,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),
             ),
           ),
-        );
-      }),
-    );
-  }
+        ),
+      );
+    }).toList(),
+  );
+}
 
   Widget _buildTextField({required TextEditingController controller, String? hint, int maxLines = 1, bool readOnly = false}) {
     return TextField(
