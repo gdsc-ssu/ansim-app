@@ -1,4 +1,3 @@
-import 'package:ansim_app/common/enums/hazard_level.dart';
 import 'package:ansim_app/common/widgets/custom_maker.dart';
 import 'package:ansim_app/constansts/colors.dart';
 import 'package:ansim_app/constansts/paths.dart';
@@ -14,10 +13,7 @@ class MapScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => MapViewModel(),
-      child: const _MapScreenContent(),
-    );
+    return const _MapScreenContent();
   }
 }
 
@@ -31,27 +27,17 @@ class _MapScreenContent extends StatefulWidget {
 class _MapScreenContentState extends State<_MapScreenContent> {
   bool _markersLoaded = false;
 
-  Future<void> _loadTestMarkers(MapViewModel viewModel) async {
-    final base = viewModel.currentLocation!;
-
-    // 테스트용 마커 데이터: 현재 위치 주변에 각 HazardLevel 하나씩
-    final testData = [
-      (LatLng(base.latitude + 0.001, base.longitude), HazardLevel.HIGH),
-      (LatLng(base.latitude, base.longitude + 0.001), HazardLevel.MEDIUM),
-      (LatLng(base.latitude - 0.001, base.longitude), HazardLevel.LOW),
-      (LatLng(base.latitude, base.longitude - 0.001), HazardLevel.UNKNOWN),
-    ];
-
+  Future<void> _loadMarkers(MapViewModel viewModel) async {
     final markers = <Marker>{};
-    for (var i = 0; i < testData.length; i++) {
+
+    for (final dto in viewModel.markerModels) {
       if (!mounted) return;
-      final (latLng, level) = testData[i];
-      final icon = await widgetToMarkerIcon(customMarker(level), context);
+      final icon = await widgetToMarkerIcon(customMarker(dto.hazardLevel), context);
       markers.add(Marker(
-        markerId: MarkerId('test_marker_$i'),
-        position: latLng,
+        markerId: MarkerId(dto.id),
+        position: LatLng(dto.latitude, dto.longitude),
         icon: icon,
-        infoWindow: InfoWindow(title: level.koLabel),
+        infoWindow: InfoWindow(title: dto.hazardLevel.koLabel),
       ));
     }
 
@@ -67,7 +53,7 @@ class _MapScreenContentState extends State<_MapScreenContent> {
     if (!viewModel.isLoading && viewModel.currentLocation != null && !_markersLoaded) {
       _markersLoaded = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) _loadTestMarkers(viewModel);
+        if (mounted) _loadMarkers(viewModel);
       });
     }
 

@@ -1,10 +1,15 @@
+import 'dart:async';
+
+import 'package:ansim_app/data/dto/response/marker_response.dart';
 import 'package:ansim_app/data/repository/local/secure_storage_repository.dart';
+import 'package:ansim_app/data/service/marker_service.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class MapViewModel extends ChangeNotifier {
   final SecureStorageRepository _secureStorage = SecureStorageRepository();
+  final MarkerService _markerService = MarkerService();
 
   bool isLoading = true;
   LatLng? currentLocation;
@@ -14,6 +19,13 @@ class MapViewModel extends ChangeNotifier {
   final List<String> categories = ["전체", "싱크홀", "도로파손", "붕괴위험", "시설물"];
 
   Set<Marker> markers = {};
+  List<MarkerResponse> markerModels = [];
+
+  StreamSubscription<Position>? _locationSubscription;
+
+  // 마커 재조회 기준 거리 (미터)
+  static const double _markerRefetchDistance = 200;
+  LatLng? _lastFetchedLocation;
 
   void setMarkers(Set<Marker> newMarkers) {
     markers = newMarkers;
@@ -26,17 +38,59 @@ class MapViewModel extends ChangeNotifier {
 
   Future<void> _initializeLocation() async {
     try {
-      Position position = await Geolocator.getCurrentPosition(
+      final position = await Geolocator.getCurrentPosition(
           locationSettings:
               const LocationSettings(accuracy: LocationAccuracy.high));
       currentLocation = LatLng(position.latitude, position.longitude);
+      _lastFetchedLocation = currentLocation;
+      await _fetchNearbyMarkers(position.latitude, position.longitude);
     } catch (e) {
-      // Default location (e.g., Seoul) if failed to get location
       currentLocation = const LatLng(37.5665, 126.9780);
-      print("Error getting location: $e");
+      debugPrint("Error getting location: $e");
     } finally {
       isLoading = false;
       notifyListeners();
+    }
+    _startLocationStream();
+  }
+
+  void _startLocationStream() {
+    _locationSubscription = Geolocator.getPositionStream(
+      locationSettings: const LocationSettings(
+        accuracy: LocationAccuracy.high,
+        distanceFilter: 10, // 10m 이상 이동 시에만 이벤트 발생
+      ),
+    ).listen((position) {
+      currentLocation = LatLng(position.latitude, position.longitude);
+      notifyListeners();
+
+      // 마지막 마커 조회 위치에서 200m 이상 이동 시 재조회
+      if (_lastFetchedLocation != null) {
+        final distance = Geolocator.distanceBetween(
+          _lastFetchedLocation!.latitude,
+          _lastFetchedLocation!.longitude,
+          position.latitude,
+          position.longitude,
+        );
+        if (distance >= _markerRefetchDistance) {
+          _lastFetchedLocation = currentLocation;
+          _fetchNearbyMarkers(position.latitude, position.longitude);
+        }
+      }
+    });
+  }
+
+  Future<void> _fetchNearbyMarkers(double lat, double lng) async {
+    try {
+      markerModels = await _markerService.getNearbyMarkers(
+        lat: lat,
+        lng: lng,
+        radius: 100,
+      );
+      debugPrint('[MapViewModel] 마커 ${markerModels.length}개 조회됨');
+      notifyListeners();
+    } catch (e) {
+      debugPrint('[MapViewModel] 마커 조회 실패: $e');
     }
   }
 
@@ -52,28 +106,19 @@ class MapViewModel extends ChangeNotifier {
     mapController?.animateCamera(CameraUpdate.zoomOut());
   }
 
-  Future<void> moveToCurrentLocation() async {
-    if (currentLocation != null) {
-      // 위치 업데이트가 한 번 더 필요한 경우를 위해 현재 위치를 다시 가져올 수도 있지만
-      // 일단은 기존 currentLocation으로 이동합니다.
-      try {
-        Position position = await Geolocator.getCurrentPosition(
-            locationSettings:
-                const LocationSettings(accuracy: LocationAccuracy.high));
-        currentLocation = LatLng(position.latitude, position.longitude);
-      } catch (e) {
-        print("Error getting location: $e");
-      }
+  void moveToCurrentLocation() {
+    if (currentLocation == null) return;
+    mapController?.animateCamera(
+      CameraUpdate.newCameraPosition(
+        CameraPosition(target: currentLocation!, zoom: 15.0),
+      ),
+    );
+  }
 
-      mapController?.animateCamera(
-        CameraUpdate.newCameraPosition(
-          CameraPosition(
-            target: currentLocation!,
-            zoom: 15.0,
-          ),
-        ),
-      );
-    }
+  @override
+  void dispose() {
+    _locationSubscription?.cancel();
+    super.dispose();
   }
 
   void changeTab(int index) {
