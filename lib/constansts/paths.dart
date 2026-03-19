@@ -6,6 +6,10 @@ abstract class Paths {
   static const String permission = '/permission';
 
   static const String map = '/map';
+  static const String camera = '/camera';
+  static const String aiAnalysis = '/aiAnalysis';
+  static const String report = '/report';
+
   static const String myPage = '/myPage';
 
 }

@@ -155,7 +155,7 @@ class _MapScreenContent extends StatelessWidget {
 
           if (isLoggedIn) {
             // 2. 로그인 상태면 신고 페이지로 이동 (경로명은 프로젝트 설정에 맞게 수정하세요)
-            //context.push(Paths.);
+            context.push(Paths.camera);
           } else {
             // 3. 로그인이 안 되어 있으면 로그인 페이지로 이동
             // 사용자에게 알림을 주고 싶다면 여기서 간단한 SnackBar를 띄울 수도 있습니다.

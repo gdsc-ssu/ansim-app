@@ -2,10 +2,14 @@ import 'package:ansim_app/constansts/paths.dart';
 import 'package:ansim_app/screens/auth/login_screen.dart';
 import 'package:ansim_app/screens/auth/permission/permission_screen.dart';
 import 'package:ansim_app/common/widgets/navigation_screen.dart';
+import 'package:ansim_app/screens/map/report/ai_analysis_screen.dart';
+import 'package:ansim_app/screens/map/report/camera_screen.dart';
+import 'package:ansim_app/screens/map/report/report_screen.dart';
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-final AppRouter = GoRouter(initialLocation: Paths.login , routes: [
+final AppRouter = GoRouter(initialLocation: Paths.map, routes: [
   GoRoute(
       path: Paths.login,
       pageBuilder: (context, state) => MaterialPage(
@@ -24,4 +28,32 @@ final AppRouter = GoRouter(initialLocation: Paths.login , routes: [
             key: state.pageKey,
             child: const NavigationScreen(),
           )),
+  GoRoute(
+      path: Paths.camera,
+      pageBuilder: (context, state) => MaterialPage(
+        key: state.pageKey,
+        child: const CameraScreen(),
+      )),
+  GoRoute(
+    path: Paths.aiAnalysis,
+    pageBuilder: (context, state) {
+      final image = state.extra as XFile;
+
+      return MaterialPage(
+        key: state.pageKey,
+        child: AiAnalysisScreen(image: image),
+      );
+    },
+  ),
+  GoRoute(
+    path: Paths.report,
+    pageBuilder: (context, state) {
+      final image = state.extra as XFile;
+
+      return MaterialPage(
+        key: state.pageKey,
+        child: ReportScreen(image: image),
+      );
+    },
+  ),
 ]);
