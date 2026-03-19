@@ -9,16 +9,26 @@ import 'package:provider/provider.dart';
 class NavigationScreen extends StatelessWidget {
   const NavigationScreen({super.key});
 
-  // 각 탭에 들어갈 실제 화면 리스트
+  @override
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (_) => MapViewModel(),
+      child: const _NavigationContent(),
+    );
+  }
+}
+
+class _NavigationContent extends StatelessWidget {
+  const _NavigationContent();
+
   static const List<Widget> _screens = [
-    MapScreen(),           // 0번: 지도
-    Center(child: Text('알림 화면')), // 1번: 알림 (추후 제작)
-    Center(child: Text('마이페이지')), // 2번: 프로필 (추후 제작)
+    MapScreen(),
+    Center(child: Text('알림 화면')),
+    Center(child: Text('마이페이지')),
   ];
 
   @override
   Widget build(BuildContext context) {
-    // ViewModel의 상태를 구독하여 현재 인덱스를 가져옴
     final viewModel = context.watch<MapViewModel>();
 
     return Scaffold(
