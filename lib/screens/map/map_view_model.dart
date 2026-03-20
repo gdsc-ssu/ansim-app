@@ -58,6 +58,20 @@ class MapViewModel extends ChangeNotifier {
 
   Future<void> _initializeLocation() async {
     try {
+      // iOS에서 geolocator가 CLLocationManager 권한을 직접 확인/요청
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+      if (permission == LocationPermission.deniedForever) {
+        debugPrint('[MapViewModel] 위치 권한 영구 거부');
+        currentLocation = const LatLng(37.5665, 126.9780);
+        isLoading = false;
+        notifyListeners();
+        _startLocationStream();
+        return;
+      }
+
       final position = await Geolocator.getCurrentPosition(
           locationSettings:
               const LocationSettings(accuracy: LocationAccuracy.high));

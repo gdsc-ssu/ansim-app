@@ -1,3 +1,4 @@
+import 'package:ansim_app/data/repository/local/secure_storage_repository.dart';
 import 'package:ansim_app/data/service/user_service.dart';
 import 'package:ansim_app/screens/auth/auth_provider.dart';
 import 'package:flutter/material.dart';
@@ -5,6 +6,7 @@ import 'package:get_it/get_it.dart';
 
 class MyPageViewModel extends ChangeNotifier {
   final UserService _userService = UserService();
+  final SecureStorageRepository _secureStorage = SecureStorageRepository();
 
   bool _isLoading = true;
   String? _name;
@@ -42,7 +44,12 @@ class MyPageViewModel extends ChangeNotifier {
       _name = profile['name'] as String?;
       _email = profile['email'] as String?;
       _profileImage = profile['profileImage'] as String?;
-      _address = profile['address'] as String?;
+      final serverAddress = profile['address'] as String?;
+      if (serverAddress != null && serverAddress.isNotEmpty) {
+        _address = serverAddress;
+      } else {
+        _address = await _secureStorage.readUserAddress();
+      }
 
       final settings = profile['settings'] as Map<String, dynamic>?;
       if (settings != null) {
