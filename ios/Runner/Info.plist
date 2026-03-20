@@ -53,6 +53,8 @@
 	<string>주변 안전 정보를 확인하기 위해 위치 권한이 필요합니다.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>제보 사진 촬영을 위해 카메라 권한이 필요합니다.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>제보할 사진을 선택하기 위해 사진 라이브러리 접근 권한이 필요합니다.</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
