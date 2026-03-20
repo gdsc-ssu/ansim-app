@@ -2,6 +2,7 @@ import 'package:ansim_app/constansts/colors.dart';
 import 'package:ansim_app/common/widgets/atom/texts/texts.dart';
 import 'package:ansim_app/screens/map/map_screen.dart';
 import 'package:ansim_app/screens/map/map_view_model.dart';
+import 'package:ansim_app/screens/mypage/mypage_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
@@ -24,7 +25,7 @@ class _NavigationContent extends StatelessWidget {
   static const List<Widget> _screens = [
     MapScreen(),
     Center(child: Text('알림 화면')),
-    Center(child: Text('마이페이지')),
+    MyPageScreen(),
   ];
 
   @override
