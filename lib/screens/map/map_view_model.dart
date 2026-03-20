@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:ansim_app/common/enums/hazard_type.dart';
 import 'package:ansim_app/data/dto/response/marker_response.dart';
 import 'package:ansim_app/data/dto/response/report_response.dart';
 import 'package:ansim_app/data/repository/local/secure_storage_repository.dart';
@@ -16,8 +17,7 @@ class MapViewModel extends ChangeNotifier {
   LatLng? currentLocation;
   GoogleMapController? mapController;
   int currentIndex = 0;
-  int selectedCategoryIndex = 0;
-  final List<String> categories = ["전체", "싱크홀", "도로파손", "붕괴위험", "시설물"];
+  HazardType? selectedCategory; // null = 전체
 
   Set<Marker> markers = {};
   List<MarkerResponse> markerModels = [];
@@ -153,10 +153,9 @@ class MapViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void onCategorySelected(int index) {
-    selectedCategoryIndex = index;
+  void onCategorySelected(HazardType? type) {
+    selectedCategory = type;
     notifyListeners();
-    // TODO: 카테고리 선택에 따른 추가 액션 구현
   }
 
   Future<void> fetchReport(String id) async {
