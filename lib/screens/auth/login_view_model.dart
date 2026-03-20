@@ -38,7 +38,7 @@ class LoginViewModel extends ChangeNotifier {
     String? clientId;
 
     if (isIOS) {
-      clientId = dotenv.get("CLIENT_ID", fallback: null);
+      clientId = dotenv.get("IOS_CLIENT_ID", fallback: null);
       log("사용 중인 CLIENT_ID: $clientId"); // 디버깅용
     } else {
       clientId = null;
