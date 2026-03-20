@@ -1,8 +1,8 @@
 import 'package:ansim_app/common/enums/hazard_level.dart';
 import 'package:ansim_app/common/enums/hazard_type.dart';
-import 'package:ansim_app/data/dto/response/analysis_response.dart';
 import 'package:ansim_app/data/repository/local/secure_storage_repository.dart';
 import 'package:ansim_app/data/service/analysis_service.dart';
+import 'package:ansim_app/data/service/marker_service.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -11,6 +11,7 @@ import 'package:permission_handler/permission_handler.dart';
 class ReportViewModel extends ChangeNotifier {
   // --- 의존성 주입 (Service) ---
   final AnalysisService _analysisService = AnalysisService();
+  final MarkerService _markerService = MarkerService();
   final SecureStorageRepository _secureStorage = SecureStorageRepository();
 
   // --- 1. 카메라 및 상태 관리 ---
@@ -24,6 +25,11 @@ class ReportViewModel extends ChangeNotifier {
   HazardLevel _hazardLevel = HazardLevel.HIGH;
   String _address = "";
   final TextEditingController descriptionController = TextEditingController();
+
+  // --- 업로드된 이미지 정보 (신고 제출 시 사용) ---
+  String? _uploadedImageUrl;
+  String? _uploadedImageMimeType;
+  int? _uploadedImageFileSize;
 
   // --- 3. 위치 데이터 ---
   double? latitude;
@@ -110,16 +116,20 @@ class ReportViewModel extends ChangeNotifier {
 
     try {
       // Service의 통합 메서드 호출 (URL 획득 -> 업로드 -> 분석)
-      final AnalysisResponse result = await _analysisService.uploadAndAnalyze(imagePath);
+      final result = await _analysisService.uploadAndAnalyze(imagePath);
 
       // 분석 결과를 Enum 상태에 반영
-      _hazardType = result.hazardType;
-      _hazardLevel = result.hazardLevel;
+      _hazardType = result.analysis.hazardType;
+      _hazardLevel = result.analysis.hazardLevel;
+
+      // 업로드된 이미지 정보 저장 (신고 제출 시 사용)
+      _uploadedImageUrl = result.imageUrl;
+      _uploadedImageMimeType = result.mimeType;
+      _uploadedImageFileSize = result.fileSize;
 
       debugPrint("AI 분석 완료: ${_hazardType.name} (${_hazardType.koLabel})");
     } catch (e) {
       debugPrint("AI 분석 실패: $e");
-      // 실패 시 기존 기본값 유지 혹은 사용자에게 알림 로직 추가 가능
     } finally {
       _isAnalyzing = false;
       notifyListeners();
@@ -147,10 +157,34 @@ class ReportViewModel extends ChangeNotifier {
   /// 최종 신고 제출
   Future<bool> submitReport() async {
     if (_capturedImage == null || _isAnalyzing) return false;
+    if (latitude == null || longitude == null) return false;
 
     try {
-      // TODO: 최종 신고 API 호출 로직 (_hazardType.name, _hazardLevel.name 사용)
-      debugPrint("서버 전송: ${_hazardType.name} / ${_hazardLevel.name} / $_address / lat=$latitude, lng=$longitude");
+      final description = descriptionController.text.trim().isEmpty
+          ? '${_hazardType.koLabel} ${_hazardLevel.koLabel}'
+          : descriptionController.text.trim();
+
+      List<Map<String, dynamic>>? images;
+      if (_uploadedImageUrl != null) {
+        images = [
+          {
+            'url': _uploadedImageUrl!,
+            'mimeType': _uploadedImageMimeType ?? 'image/jpeg',
+            'size': _uploadedImageFileSize ?? 0,
+          },
+        ];
+      }
+
+      await _markerService.createMarker(
+        latitude: latitude!,
+        longitude: longitude!,
+        hazardType: _hazardType.name,
+        hazardLevel: _hazardLevel.name,
+        description: description,
+        images: images,
+      );
+
+      debugPrint("신고 제출 성공: ${_hazardType.name} / ${_hazardLevel.name}");
       return true;
     } catch (e) {
       debugPrint("신고 제출 에러: $e");
