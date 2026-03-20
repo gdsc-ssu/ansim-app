@@ -1,6 +1,7 @@
 import 'package:ansim_app/common/widgets/atom/texts/texts.dart';
 import 'package:ansim_app/common/widgets/basic_app_bar.dart';
 import 'package:ansim_app/constansts/colors.dart';
+import 'package:ansim_app/data/di/get_it_locator.dart';
 import 'package:ansim_app/screens/alarm/alarm_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -10,8 +11,8 @@ class AlarmScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => AlarmViewModel(),
+    return ChangeNotifierProvider.value(
+      value: getIt<AlarmViewModel>(),
       child: const _AlarmScreenContent(),
     );
   }
@@ -45,18 +46,27 @@ class _AlarmScreenContent extends StatelessWidget {
       ),
       body: viewModel.isLoading
           ? const Center(child: CircularProgressIndicator())
-          : ListView.separated(
-              itemCount: viewModel.items.length,
-              separatorBuilder: (_, __) =>
-                  const Divider(height: 1, thickness: 1, color: AnsimColor.border),
-              itemBuilder: (context, index) {
-                final item = viewModel.items[index];
-                return _NotificationTile(
-                  item: item,
-                  onTap: () => viewModel.markAsRead(item.id),
-                );
-              },
-            ),
+          : viewModel.items.isEmpty
+              ? Center(
+                  child: Text(
+                    '알림이 없습니다',
+                    style: AnsimTextStyle.bodyB2.copyWith(
+                      color: AnsimColor.textHint,
+                    ),
+                  ),
+                )
+              : ListView.separated(
+                  itemCount: viewModel.items.length,
+                  separatorBuilder: (_, __) =>
+                      const Divider(height: 1, thickness: 1, color: AnsimColor.border),
+                  itemBuilder: (context, index) {
+                    final item = viewModel.items[index];
+                    return _NotificationTile(
+                      item: item,
+                      onTap: () => viewModel.markAsRead(item.id),
+                    );
+                  },
+                ),
     );
   }
 }
