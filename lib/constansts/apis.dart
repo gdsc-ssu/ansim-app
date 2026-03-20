@@ -16,8 +16,10 @@ abstract class Apis {
   /// 마커 관련 api
   static const String markers = "/api/markers";
 
+  /// 유저 관련 api
+  static const String userMe = "/api/users/me";
+  static const String userSettings = "/api/users/me/settings";
+
   /// 이미지 관련 api
   static const String imageSignedUrl = "/api/images/signed-url";
-
-
 }
