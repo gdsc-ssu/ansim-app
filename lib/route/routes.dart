@@ -39,23 +39,27 @@ final AppRouter = GoRouter(initialLocation: Paths.login, routes: [
   GoRoute(
     path: Paths.aiAnalysis,
     pageBuilder: (context, state) {
-      final image = state.extra as XFile;
+      final extras = state.extra as Map<String, dynamic>;
+      final image = extras['image'] as XFile;
+      final viewModel = extras['viewModel'] as ReportViewModel;
 
       return MaterialPage(
         key: state.pageKey,
-        child: AiAnalysisScreen(image: image),
+        child: AiAnalysisScreen(image: image, viewModel: viewModel),
       );
     },
   ),
   GoRoute(
     path: Paths.report,
     pageBuilder: (context, state) {
-      final image = state.extra as XFile;
+      final extras = state.extra as Map<String, dynamic>;
+      final image = extras['image'] as XFile;
+      final viewModel = extras['viewModel'] as ReportViewModel;
 
       return MaterialPage(
         key: state.pageKey,
-        child: ChangeNotifierProvider(
-          create: (_) => ReportViewModel(),
+        child: ChangeNotifierProvider.value(
+          value: viewModel,
           child: ReportScreen(image: image),
         ),
       );

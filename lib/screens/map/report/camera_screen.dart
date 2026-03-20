@@ -133,10 +133,13 @@ class CameraScreen extends StatelessWidget {
               onTap: () async {
                 await viewModel.takePicture();
                 if (viewModel.capturedImage != null && context.mounted) {
-                  // 촬영 성공 시 aiAnalysis 화면으로 이동
+                  // 촬영 성공 시 aiAnalysis 화면으로 이동 (ViewModel 함께 전달)
                   context.push(
                     Paths.aiAnalysis,
-                    extra: viewModel.capturedImage,
+                    extra: {
+                      'image': viewModel.capturedImage,
+                      'viewModel': viewModel,
+                    },
                   );
                 }
               },
