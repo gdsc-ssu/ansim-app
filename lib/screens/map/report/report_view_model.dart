@@ -1,6 +1,7 @@
 import 'package:ansim_app/common/enums/hazard_level.dart';
 import 'package:ansim_app/common/enums/hazard_type.dart';
 import 'package:ansim_app/data/dto/response/analysis_response.dart';
+import 'package:ansim_app/data/repository/local/secure_storage_repository.dart';
 import 'package:ansim_app/data/service/analysis_service.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +11,7 @@ import 'package:permission_handler/permission_handler.dart';
 class ReportViewModel extends ChangeNotifier {
   // --- 의존성 주입 (Service) ---
   final AnalysisService _analysisService = AnalysisService();
+  final SecureStorageRepository _secureStorage = SecureStorageRepository();
 
   // --- 1. 카메라 및 상태 관리 ---
   CameraController? _controller;
@@ -20,7 +22,7 @@ class ReportViewModel extends ChangeNotifier {
   // --- 2. 신고 데이터 (내부 상태는 Enum으로 관리) ---
   HazardType _hazardType = HazardType.SINKHOLE;
   HazardLevel _hazardLevel = HazardLevel.HIGH;
-  String _address = "서울 강동구 천호대로 42길";
+  String _address = "";
   final TextEditingController descriptionController = TextEditingController();
 
   // --- 3. 위치 데이터 ---
@@ -41,6 +43,12 @@ class ReportViewModel extends ChangeNotifier {
   // --- 카메라 로직 ---
   Future<void> initializeCamera() async {
     _fetchCurrentLocation();
+    _secureStorage.readUserAddress().then((saved) {
+      if (saved != null && saved.isNotEmpty && _address.isEmpty) {
+        _address = saved;
+        notifyListeners();
+      }
+    });
 
     final status = await Permission.camera.request();
     if (status.isGranted) {

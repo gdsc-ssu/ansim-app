@@ -33,6 +33,7 @@ class _MapScreenContentState extends State<_MapScreenContent> {
   HazardType? _lastSelectedCategory;
   ReportResponse? _lastShownReport;
   final Map<HazardLevel, BitmapDescriptor> _iconCache = {};
+  final Map<HazardLevel, Future<BitmapDescriptor>> _iconPending = {};
 
   @override
   void initState() {
@@ -71,11 +72,14 @@ class _MapScreenContentState extends State<_MapScreenContent> {
     });
   }
 
-  Future<BitmapDescriptor> _getIcon(HazardLevel level) async {
-    if (_iconCache.containsKey(level)) return _iconCache[level]!;
-    final icon = await widgetToMarkerIcon(customMarker(level), context);
-    _iconCache[level] = icon;
-    return icon;
+  Future<BitmapDescriptor> _getIcon(HazardLevel level) {
+    if (_iconCache.containsKey(level)) return Future.value(_iconCache[level]!);
+    return _iconPending.putIfAbsent(level, () async {
+      final icon = await widgetToMarkerIcon(customMarker(level), context);
+      _iconCache[level] = icon;
+      _iconPending.remove(level);
+      return icon;
+    });
   }
 
   Future<void> _loadMarkers(MapViewModel viewModel) async {
@@ -89,9 +93,12 @@ class _MapScreenContentState extends State<_MapScreenContent> {
 
     if (!mounted || generation != _markerLoadGeneration) return;
 
-    // 필요한 레벨 아이콘만 병렬로 미리 생성
+    // 필요한 레벨 아이콘 순차 생성 (메모리 부하 방지)
     final neededLevels = filtered.map((m) => m.hazardLevel).toSet();
-    await Future.wait(neededLevels.map((level) => _getIcon(level)));
+    for (final level in neededLevels) {
+      if (!mounted || generation != _markerLoadGeneration) return;
+      await _getIcon(level);
+    }
 
     if (!mounted || generation != _markerLoadGeneration) return;
 

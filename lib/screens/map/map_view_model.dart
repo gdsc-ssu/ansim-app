@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:ansim_app/common/enums/hazard_type.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:ansim_app/data/dto/response/marker_response.dart';
 import 'package:ansim_app/data/dto/response/report_response.dart';
 import 'package:ansim_app/data/repository/local/secure_storage_repository.dart';
@@ -51,7 +52,10 @@ class MapViewModel extends ChangeNotifier {
               const LocationSettings(accuracy: LocationAccuracy.high));
       currentLocation = LatLng(position.latitude, position.longitude);
       _lastFetchedLocation = currentLocation;
-      await _fetchNearbyMarkers(position.latitude, position.longitude);
+      await Future.wait([
+        _fetchNearbyMarkers(position.latitude, position.longitude),
+        _saveAddressFromPosition(position.latitude, position.longitude),
+      ]);
     } catch (e) {
       currentLocation = const LatLng(37.5665, 126.9780);
       debugPrint("Error getting location: $e");
@@ -60,6 +64,23 @@ class MapViewModel extends ChangeNotifier {
       notifyListeners();
     }
     _startLocationStream();
+  }
+
+  Future<void> _saveAddressFromPosition(double lat, double lng) async {
+    try {
+      final placemarks = await placemarkFromCoordinates(lat, lng);
+      if (placemarks.isEmpty) return;
+      final p = placemarks.first;
+      final address = [p.administrativeArea, p.subLocality, p.thoroughfare]
+          .where((s) => s != null && s.isNotEmpty)
+          .join(' ');
+      if (address.isNotEmpty) {
+        await _secureStorage.saveUserAddress(address);
+        debugPrint('[MapViewModel] 주소 저장: $address');
+      }
+    } catch (e) {
+      debugPrint('[MapViewModel] 주소 획득 실패: $e');
+    }
   }
 
   void _startLocationStream() {

@@ -57,6 +57,15 @@ class SecureStorageRepository {
     return value == "true";
   }
 
+  ///주소
+  Future<void> saveUserAddress(String address) async {
+    await _storage.write(key: "user_address", value: address);
+  }
+
+  Future<String?> readUserAddress() async {
+    return await _storage.read(key: "user_address");
+  }
+
   ///모든 데이터 삭제
   Future<void> deleteAllData() async {
     await _storage.deleteAll();
