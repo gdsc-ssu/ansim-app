@@ -7,13 +7,13 @@ import 'package:dio/dio.dart';
 
 /// 업로드 + AI 분석 결과를 함께 반환하는 클래스
 class UploadAndAnalysisResult {
-  final AnalysisResponse analysis;
+  final AnalysisResponse? analysis;
   final String imageUrl;
   final String mimeType;
   final int fileSize;
 
   UploadAndAnalysisResult({
-    required this.analysis,
+    this.analysis,
     required this.imageUrl,
     required this.mimeType,
     required this.fileSize,
@@ -24,6 +24,7 @@ class AnalysisService {
   final ApiClient _apiClient = ApiClient();
 
   /// 이미지 업로드부터 분석까지 한 번에 처리하는 프로세스
+  /// AI 분석 실패 시에도 이미지 업로드 결과는 반환 (analysis가 null)
   Future<UploadAndAnalysisResult> uploadAndAnalyze(String imagePath) async {
     try {
       // 1. 서버에 Signed URL 요청 (권한 얻기)
@@ -59,8 +60,13 @@ class AnalysisService {
 
       log("GCS 업로드 완료: $publicUrl");
 
-      // 3. AI 분석 API 호출
-      final analysis = await _analyzeHazard(publicUrl);
+      // 3. AI 분석 API 호출 (실패해도 업로드 결과는 반환)
+      AnalysisResponse? analysis;
+      try {
+        analysis = await _analyzeHazard(publicUrl);
+      } catch (e) {
+        log("AI 분석 실패 (이미지 업로드는 성공): $e");
+      }
 
       return UploadAndAnalysisResult(
         analysis: analysis,
@@ -69,8 +75,8 @@ class AnalysisService {
         fileSize: fileSize,
       );
     } on DioException catch (e) {
-      log("업로드/분석 중 Dio 에러: ${e.response?.data ?? e.message}");
-      throw Exception('처리 실패: ${e.response?.data?['message'] ?? e.message}');
+      log("업로드 중 Dio 에러: ${e.response?.data ?? e.message}");
+      throw Exception('업로드 실패: ${e.response?.data?['message'] ?? e.message}');
     } catch (e) {
       log("알 수 없는 에러: $e");
       throw Exception('Unknown error: $e');
