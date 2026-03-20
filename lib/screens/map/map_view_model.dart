@@ -31,6 +31,10 @@ class MapViewModel extends ChangeNotifier {
   static const double _markerRefetchDistance = 200;
   LatLng? _lastFetchedLocation;
 
+  // 줌 레벨 기반 마커 반경
+  double _currentZoom = 15.0;
+  double _lastFetchedZoom = 15.0;
+
   void setMarkers(Set<Marker> newMarkers) {
     markers = newMarkers;
     notifyListeners();
@@ -84,14 +88,33 @@ class MapViewModel extends ChangeNotifier {
     });
   }
 
+  /// 줌 레벨에 따른 마커 조회 반경 계산 (미터, 최대 300)
+  int _radiusFromZoom(double zoom) {
+    if (zoom >= 17) return 100;
+    if (zoom >= 15) return 200;
+    return 300;
+  }
+
+  /// 카메라 이동 완료 시 호출 — 줌 변화에 따라 마커 재조회
+  void onCameraIdle(double zoom) {
+    _currentZoom = zoom;
+    final zoomDiff = (_currentZoom - _lastFetchedZoom).abs();
+    if (zoomDiff >= 1.0 && currentLocation != null) {
+      _lastFetchedZoom = _currentZoom;
+      _lastFetchedLocation = currentLocation;
+      _fetchNearbyMarkers(currentLocation!.latitude, currentLocation!.longitude);
+    }
+  }
+
   Future<void> _fetchNearbyMarkers(double lat, double lng) async {
     try {
+      final radius = _radiusFromZoom(_currentZoom);
       markerModels = await _markerService.getNearbyMarkers(
         lat: lat,
         lng: lng,
-        radius: 100,
+        radius: radius.toDouble(),
       );
-      debugPrint('[MapViewModel] 마커 ${markerModels.length}개 조회됨');
+      debugPrint('[MapViewModel] 마커 ${markerModels.length}개 조회됨 (radius=$radius, zoom=$_currentZoom)');
       notifyListeners();
     } catch (e) {
       debugPrint('[MapViewModel] 마커 조회 실패: $e');

@@ -117,6 +117,10 @@ class _MapScreenContentState extends State<_MapScreenContent> {
               zoom: 15.0,
             ),
             onMapCreated: viewModel.onMapCreated,
+            onCameraIdle: () async {
+              final zoom = await viewModel.mapController?.getZoomLevel();
+              if (zoom != null) viewModel.onCameraIdle(zoom);
+            },
             myLocationEnabled: true,
             myLocationButtonEnabled: false,
             zoomControlsEnabled: false,
