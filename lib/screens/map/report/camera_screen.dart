@@ -4,6 +4,7 @@ import 'package:ansim_app/screens/map/report/report_view_model.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 class CameraScreen extends StatelessWidget {
@@ -123,9 +124,22 @@ class CameraScreen extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            // 갤러리 버튼 (임시 아이콘)
-            _squareIconButton(Icons.photo_library_outlined, () {
-              // TODO: 갤러리 연동 로직
+            // 갤러리 버튼
+            _squareIconButton(Icons.photo_library_outlined, () async {
+              final picked = await ImagePicker().pickImage(
+                source: ImageSource.gallery,
+                imageQuality: 85,
+              );
+              if (picked != null && context.mounted) {
+                viewModel.setImage(picked);
+                context.push(
+                  Paths.aiAnalysis,
+                  extra: {
+                    'image': picked,
+                    'viewModel': viewModel,
+                  },
+                );
+              }
             }),
 
             // 촬영 버튼
