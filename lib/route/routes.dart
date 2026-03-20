@@ -12,7 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-final AppRouter = GoRouter(initialLocation: Paths.map, routes: [
+final AppRouter = GoRouter(initialLocation: Paths.login, routes: [
   GoRoute(
       path: Paths.login,
       pageBuilder: (context, state) => MaterialPage(
