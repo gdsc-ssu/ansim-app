@@ -1,4 +1,5 @@
 import 'package:ansim_app/common/enums/hazard_level.dart';
+import 'package:ansim_app/common/enums/hazard_type.dart';
 import 'package:ansim_app/common/widgets/custom_maker.dart';
 import 'package:ansim_app/constansts/colors.dart';
 import 'package:ansim_app/constansts/paths.dart';
@@ -27,9 +28,12 @@ class _MapScreenContent extends StatefulWidget {
 }
 
 class _MapScreenContentState extends State<_MapScreenContent> {
-  bool _isLoadingMarkers = false;
+  int _markerLoadGeneration = 0;
   List _lastLoadedModels = const [];
+  HazardType? _lastSelectedCategory;
   ReportResponse? _lastShownReport;
+  final Map<HazardLevel, BitmapDescriptor> _iconCache = {};
+  final Map<HazardLevel, Future<BitmapDescriptor>> _iconPending = {};
 
   @override
   void initState() {
@@ -68,27 +72,45 @@ class _MapScreenContentState extends State<_MapScreenContent> {
     });
   }
 
+  Future<BitmapDescriptor> _getIcon(HazardLevel level) {
+    if (_iconCache.containsKey(level)) return Future.value(_iconCache[level]!);
+    return _iconPending.putIfAbsent(level, () async {
+      final icon = await widgetToMarkerIcon(customMarker(level), context);
+      _iconCache[level] = icon;
+      _iconPending.remove(level);
+      return icon;
+    });
+  }
+
   Future<void> _loadMarkers(MapViewModel viewModel) async {
-    if (_isLoadingMarkers) return;
-    _isLoadingMarkers = true;
+    final generation = ++_markerLoadGeneration;
 
-    final modelsSnapshot = List.of(viewModel.markerModels);
-    final markers = <Marker>{};
+    final filtered = viewModel.selectedCategory == null
+        ? viewModel.markerModels
+        : viewModel.markerModels
+            .where((m) => m.hazardType == viewModel.selectedCategory)
+            .toList();
 
-    for (final dto in modelsSnapshot) {
-      if (!mounted) break;
-      final icon = await widgetToMarkerIcon(customMarker(dto.hazardLevel), context);
-      markers.add(Marker(
-        markerId: MarkerId(dto.id),
-        position: LatLng(dto.latitude, dto.longitude),
-        icon: icon,
-        infoWindow: InfoWindow(title: dto.hazardLevel.koLabel),
-        onTap: () => viewModel.fetchReport(dto.id),
-      ));
+    if (!mounted || generation != _markerLoadGeneration) return;
+
+    // 필요한 레벨 아이콘 순차 생성 (메모리 부하 방지)
+    final neededLevels = filtered.map((m) => m.hazardLevel).toSet();
+    for (final level in neededLevels) {
+      if (!mounted || generation != _markerLoadGeneration) return;
+      await _getIcon(level);
     }
 
-    _isLoadingMarkers = false;
-    if (mounted) viewModel.setMarkers(markers);
+    if (!mounted || generation != _markerLoadGeneration) return;
+
+    final markers = filtered.map((dto) => Marker(
+      markerId: MarkerId(dto.id),
+      position: LatLng(dto.latitude, dto.longitude),
+      icon: _iconCache[dto.hazardLevel]!,
+      infoWindow: InfoWindow(title: dto.hazardLevel.koLabel),
+      onTap: () => viewModel.fetchReport(dto.id),
+    )).toSet();
+
+    if (mounted && generation == _markerLoadGeneration) viewModel.setMarkers(markers);
   }
 
   @override
@@ -98,8 +120,10 @@ class _MapScreenContentState extends State<_MapScreenContent> {
     // markerModels가 바뀔 때마다 마커 재변환
     if (!viewModel.isLoading &&
         viewModel.currentLocation != null &&
-        viewModel.markerModels != _lastLoadedModels) {
+        (viewModel.markerModels != _lastLoadedModels ||
+            viewModel.selectedCategory != _lastSelectedCategory)) {
       _lastLoadedModels = viewModel.markerModels;
+      _lastSelectedCategory = viewModel.selectedCategory;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) _loadMarkers(viewModel);
       });
@@ -182,21 +206,29 @@ class _MapScreenContentState extends State<_MapScreenContent> {
 
   /// 카테고리 체크 리스트
   Widget _buildCategoryChips(MapViewModel viewModel) {
+    // null = 전체, 나머지는 HazardType (NONE 제외)
+    final categories = <HazardType?>[
+      null,
+      ...HazardType.values.where((t) => t != HazardType.NONE),
+    ];
+
     return SizedBox(
       height: 50,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 12),
-        itemCount: viewModel.categories.length,
+        itemCount: categories.length,
         itemBuilder: (context, index) {
-          final isSelected = viewModel.selectedCategoryIndex == index;
+          final type = categories[index];
+          final isSelected = viewModel.selectedCategory == type;
+          final label = type == null ? "전체" : type.koLabel;
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4),
             child: FilterChip(
               selected: isSelected,
               showCheckmark: false,
-              label: Text(viewModel.categories[index]),
-              onSelected: (_) => viewModel.onCategorySelected(index),
+              label: Text(label),
+              onSelected: (_) => viewModel.onCategorySelected(type),
               backgroundColor: Colors.white,
               selectedColor: AnsimColor.primary,
               labelStyle: TextStyle(

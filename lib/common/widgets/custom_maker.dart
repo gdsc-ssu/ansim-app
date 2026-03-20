@@ -104,7 +104,7 @@ Future<BitmapDescriptor> widgetToMarkerIcon(
       try {
         final boundary =
         key.currentContext!.findRenderObject() as RenderRepaintBoundary;
-        final image = await boundary.toImage(pixelRatio: 3.0); // 해상도 향상
+        final image = await boundary.toImage(pixelRatio: 2.0);
         final byteData =
         await image.toByteData(format: ui.ImageByteFormat.png);
         overlayEntry.remove();
