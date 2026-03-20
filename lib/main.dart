@@ -1,4 +1,5 @@
 import 'package:ansim_app/data/di/get_it_locator.dart';
+import 'package:ansim_app/data/service/notification_service.dart';
 import 'package:ansim_app/screens/auth/auth_provider.dart';
 import 'package:ansim_app/route/routes.dart';
 import 'package:flutter/material.dart';
@@ -15,6 +16,9 @@ void main() async {
 
     // 3. DI 설정
     setupServiceLocator();
+
+    // 4. 로컬 알림 초기화
+    await NotificationService.instance.init();
 
     debugPrint("앱 초기화 완료");
   } catch (e) {

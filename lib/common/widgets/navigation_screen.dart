@@ -1,5 +1,6 @@
 import 'package:ansim_app/constansts/colors.dart';
 import 'package:ansim_app/common/widgets/atom/texts/texts.dart';
+import 'package:ansim_app/screens/alarm/alarm_screen.dart';
 import 'package:ansim_app/screens/map/map_screen.dart';
 import 'package:ansim_app/screens/map/map_view_model.dart';
 import 'package:ansim_app/screens/mypage/mypage_screen.dart';
@@ -24,8 +25,8 @@ class _NavigationContent extends StatelessWidget {
 
   static const List<Widget> _screens = [
     MapScreen(),
-    Center(child: Text('알림 화면')),
     MyPageScreen(),
+    AlarmScreen(),
   ];
 
   @override

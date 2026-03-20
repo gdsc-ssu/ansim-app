@@ -1,4 +1,5 @@
 import 'package:ansim_app/constansts/paths.dart';
+import 'package:ansim_app/screens/alarm/alarm_screen.dart';
 import 'package:ansim_app/screens/auth/login_screen.dart';
 import 'package:ansim_app/screens/auth/permission/permission_screen.dart';
 import 'package:ansim_app/common/widgets/navigation_screen.dart';
@@ -11,7 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-final AppRouter = GoRouter(initialLocation: Paths.login, routes: [
+final AppRouter = GoRouter(initialLocation: Paths.map, routes: [
   GoRoute(
       path: Paths.login,
       pageBuilder: (context, state) => MaterialPage(
@@ -65,4 +66,11 @@ final AppRouter = GoRouter(initialLocation: Paths.login, routes: [
       );
     },
   ),
+
+  GoRoute(
+      path: Paths.alarm,
+      pageBuilder: (context, state) => MaterialPage(
+        key: state.pageKey,
+        child: const AlarmScreen(),
+      )),
 ]);
