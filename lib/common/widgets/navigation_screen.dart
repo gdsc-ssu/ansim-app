@@ -25,8 +25,8 @@ class _NavigationContent extends StatelessWidget {
 
   static const List<Widget> _screens = [
     MapScreen(),
-    MyPageScreen(),
     AlarmScreen(),
+    MyPageScreen(),
   ];
 
   @override

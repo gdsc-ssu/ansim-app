@@ -118,18 +118,21 @@ class ReportViewModel extends ChangeNotifier {
       // Service의 통합 메서드 호출 (URL 획득 -> 업로드 -> 분석)
       final result = await _analysisService.uploadAndAnalyze(imagePath);
 
-      // 분석 결과를 Enum 상태에 반영
-      _hazardType = result.analysis.hazardType;
-      _hazardLevel = result.analysis.hazardLevel;
-
-      // 업로드된 이미지 정보 저장 (신고 제출 시 사용)
+      // 업로드된 이미지 정보 저장 (AI 실패와 무관하게 항상 저장)
       _uploadedImageUrl = result.imageUrl;
       _uploadedImageMimeType = result.mimeType;
       _uploadedImageFileSize = result.fileSize;
 
-      debugPrint("AI 분석 완료: ${_hazardType.name} (${_hazardType.koLabel})");
+      // AI 분석 성공 시 결과 반영, 실패 시 기본값 유지
+      if (result.analysis != null) {
+        _hazardType = result.analysis!.hazardType;
+        _hazardLevel = result.analysis!.hazardLevel;
+        debugPrint("AI 분석 완료: ${_hazardType.name} (${_hazardType.koLabel})");
+      } else {
+        debugPrint("AI 분석 실패 — 수동 선택 필요");
+      }
     } catch (e) {
-      debugPrint("AI 분석 실패: $e");
+      debugPrint("이미지 업로드 실패: $e");
     } finally {
       _isAnalyzing = false;
       notifyListeners();
