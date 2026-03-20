@@ -53,6 +53,19 @@
 	<string>주변 안전 정보를 확인하기 위해 위치 권한이 필요합니다.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>제보 사진 촬영을 위해 카메라 권한이 필요합니다.</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.249767916481-ippgsm0jnlqqt0ovdcqn191ig7f0kic7</string>
+			</array>
+		</dict>
+	</array>
+	<key>GIDClientID</key>
+	<string>249767916481-ippgsm0jnlqqt0ovdcqn191ig7f0kic7.apps.googleusercontent.com</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>

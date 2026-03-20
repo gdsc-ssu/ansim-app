@@ -25,12 +25,7 @@ class _ReportScreenState extends State<ReportScreen> {
   @override
   void initState() {
     super.initState();
-    // 2. 화면이 생성될 때 ViewModel에 이미지를 저장합니다.
-    // 만약 ReportViewModel이 이미 촬영 시점에 이미지를 가지고 있다면 생략 가능하지만,
-    // 명확한 데이터 전달을 위해 여기서 한 번 더 세팅해주는 것이 안전합니다.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ReportViewModel>().setImage(widget.image);
-    });
+    // ViewModel은 CameraScreen에서 생성되어 AI 분석이 이미 완료된 상태로 전달됨
   }
 
   @override

@@ -1,3 +1,7 @@
+import 'package:ansim_app/constansts/constants.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+
 enum HazardLevel {
   HIGH,
   MEDIUM,
@@ -30,5 +34,34 @@ enum HazardLevel {
           (e) => e.koLabel == label,
       orElse: () => HazardLevel.UNKNOWN,
     );
+  }
+}
+
+extension HazardLevelExtension on HazardLevel {
+  Color get color {
+    switch (this) {
+      case HazardLevel.HIGH: return AnsimColor.critical;
+      case HazardLevel.MEDIUM: return  AnsimColor.warning;
+      case HazardLevel.LOW: return  AnsimColor.resolved;
+      case HazardLevel.UNKNOWN: return AnsimColor.minor;
+    }
+  }
+
+  IconData get icon {
+    switch (this) {
+      case HazardLevel.HIGH: return Icons.priority_high;
+      case HazardLevel.MEDIUM: return Icons.priority_high;
+      case HazardLevel.LOW: return Icons.check;
+      case HazardLevel.UNKNOWN: return Icons.add;
+    }
+  }
+
+  String get iconPath {
+    switch (this) {
+    case HazardLevel.HIGH: return 'assets/icons/critical.svg';
+    case HazardLevel.MEDIUM: return 'assets/icons/warning.svg';
+    case HazardLevel.LOW: return 'assets/icons/resolved.svg';
+    case HazardLevel.UNKNOWN: return 'assets/icons/minor.svg';
+    }
   }
 }

@@ -3,51 +3,78 @@ import 'package:ansim_app/common/widgets/atom/texts/texts.dart';
 import 'package:ansim_app/common/widgets/basic_app_bar.dart';
 import 'package:ansim_app/constansts/colors.dart';
 import 'package:ansim_app/constansts/paths.dart';
+import 'package:ansim_app/screens/map/report/report_view_model.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class AiAnalysisScreen extends StatefulWidget {
   final XFile image;
+  final ReportViewModel viewModel;
 
-  const AiAnalysisScreen({super.key, required this.image});
+  const AiAnalysisScreen({
+    super.key,
+    required this.image,
+    required this.viewModel,
+  });
 
   @override
   State<AiAnalysisScreen> createState() => _AiAnalysisScreenState();
 }
 
 class _AiAnalysisScreenState extends State<AiAnalysisScreen> {
-  // 분석 단계 상태 관리 (0: 이미지 인식, 1: 위험 분류, 2: 위험도 평가, 3: 위치 태깅)
-  int _currentStep = 1;
+  int _currentStep = 0;
+  bool _navigated = false;
 
   @override
   void initState() {
     super.initState();
-    _startAnalysis();
+    widget.viewModel.addListener(_onAnalysisChanged);
+    _startStepAnimation();
   }
 
-  // API 호출 및 단계적 애니메이션 시뮬레이션
-  Future<void> _startAnalysis() async {
-    // 1. 이미지 인식 완료 (잠시 대기)
+  @override
+  void dispose() {
+    widget.viewModel.removeListener(_onAnalysisChanged);
+    super.dispose();
+  }
+
+  void _onAnalysisChanged() {
+    if (!mounted || _navigated) return;
+    if (!widget.viewModel.isAnalyzing) {
+      // AI 분석 완료 → 마지막 단계 표시 후 이동
+      setState(() => _currentStep = 4);
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted && !_navigated) {
+          _navigated = true;
+          context.push(
+            Paths.report,
+            extra: {
+              'image': widget.image,
+              'viewModel': widget.viewModel,
+            },
+          );
+        }
+      });
+    }
+  }
+
+  Future<void> _startStepAnimation() async {
     await Future.delayed(const Duration(milliseconds: 800));
+    if (!mounted) return;
+    setState(() => _currentStep = 1);
 
-    // 2. 실제 서버 API 호출 (/api/analysis)
-    try {
-      // final response = await dio.post('/api/analysis', data: formData);
+    await Future.delayed(const Duration(seconds: 1));
+    if (!mounted) return;
+    setState(() => _currentStep = 2);
 
-      // 응답 대기 중 진행 단계 변경 시뮬레이션
-      await Future.delayed(const Duration(seconds: 1));
-      setState(() => _currentStep = 2);
+    await Future.delayed(const Duration(seconds: 1));
+    if (!mounted) return;
+    setState(() => _currentStep = 3);
 
-      await Future.delayed(const Duration(seconds: 1));
-      setState(() => _currentStep = 3);
-
-      context.push(
-        Paths.report,
-        extra: widget.image,
-      );
-    } catch (e) {
-      // 에러 처리
+    // 애니메이션이 끝났는데 분석도 이미 완료된 경우 바로 이동
+    if (!widget.viewModel.isAnalyzing && !_navigated) {
+      _onAnalysisChanged();
     }
   }
 
@@ -88,32 +115,40 @@ class _AiAnalysisScreenState extends State<AiAnalysisScreen> {
           const SizedBox(height: 40),
 
           // 2. 로딩 인디케이터
-          const SizedBox(
-            width: 60,
-            height: 60,
-            child: CircularProgressIndicator(
-              strokeWidth: 3,
-              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2196F3)),
+          if (_currentStep < 4)
+            const SizedBox(
+              width: 60,
+              height: 60,
+              child: CircularProgressIndicator(
+                strokeWidth: 3,
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2196F3)),
+              ),
+            )
+          else
+            const SizedBox(
+              width: 60,
+              height: 60,
+              child: Icon(Icons.check_circle, color: Color(0xFF4CAF50), size: 60),
             ),
-          ),
 
           const SizedBox(height: 24),
 
           // 3. 안내 텍스트
-          const Text(
-            "사진을 분석하고 있어요",
+          Text(
+            _currentStep < 4 ? "사진을 분석하고 있어요" : "분석이 완료되었어요",
             style: AnsimTextStyle.bodyB1,
           ),
           const SizedBox(height: 8),
-          Text(
-            "AI가 위험 유형과 위험도를\n자동으로 분류합니다",
-            textAlign: TextAlign.center,
-            style: AnsimTextStyle.bodyB2.copyWith(color: AnsimColor.textSecondary),
-          ),
+          if (_currentStep < 4)
+            Text(
+              "AI가 위험 유형과 위험도를\n자동으로 분류합니다",
+              textAlign: TextAlign.center,
+              style: AnsimTextStyle.bodyB2.copyWith(color: AnsimColor.textSecondary),
+            ),
 
           const SizedBox(height: 40),
 
-          // 4. 진행 단계 리스트 (디자인 가이드 반영)
+          // 4. 진행 단계 리스트
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 40),
@@ -144,8 +179,8 @@ class _AiAnalysisScreenState extends State<AiAnalysisScreen> {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: isDone
-                  ? const Color(0xFF4CAF50) // 완료 시 녹색
-                  : (isActive ? const Color(0xFF2196F3) : Colors.grey.shade200), // 진행중 파랑 / 대기 회색
+                  ? const Color(0xFF4CAF50)
+                  : (isActive ? const Color(0xFF2196F3) : Colors.grey.shade200),
             ),
             child: Icon(
               isDone ? Icons.check : (isActive ? Icons.circle : Icons.circle),

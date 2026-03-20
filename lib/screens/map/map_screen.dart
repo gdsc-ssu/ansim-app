@@ -1,5 +1,8 @@
+import 'package:ansim_app/common/enums/hazard_level.dart';
+import 'package:ansim_app/common/widgets/custom_maker.dart';
 import 'package:ansim_app/constansts/colors.dart';
 import 'package:ansim_app/constansts/paths.dart';
+import 'package:ansim_app/data/dto/response/report_response.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
@@ -12,20 +15,95 @@ class MapScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => MapViewModel(),
-      child: const _MapScreenContent(),
-    );
+    return const _MapScreenContent();
   }
 }
 
-class _MapScreenContent extends StatelessWidget {
+class _MapScreenContent extends StatefulWidget {
   const _MapScreenContent();
 
   @override
+  State<_MapScreenContent> createState() => _MapScreenContentState();
+}
+
+class _MapScreenContentState extends State<_MapScreenContent> {
+  bool _isLoadingMarkers = false;
+  List _lastLoadedModels = const [];
+  ReportResponse? _lastShownReport;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<MapViewModel>().addListener(_onViewModelChanged);
+    });
+  }
+
+  @override
+  void dispose() {
+    context.read<MapViewModel>().removeListener(_onViewModelChanged);
+    super.dispose();
+  }
+
+  void _onViewModelChanged() {
+    if (!mounted) return;
+    final viewModel = context.read<MapViewModel>();
+    final report = viewModel.selectedReport;
+    if (report != null && report != _lastShownReport) {
+      _lastShownReport = report;
+      _showReportBottomSheet(report);
+    }
+  }
+
+  void _showReportBottomSheet(ReportResponse report) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => _ReportBottomSheet(report: report),
+    ).whenComplete(() {
+      _lastShownReport = null;
+      if (mounted) context.read<MapViewModel>().clearSelectedReport();
+    });
+  }
+
+  Future<void> _loadMarkers(MapViewModel viewModel) async {
+    if (_isLoadingMarkers) return;
+    _isLoadingMarkers = true;
+
+    final modelsSnapshot = List.of(viewModel.markerModels);
+    final markers = <Marker>{};
+
+    for (final dto in modelsSnapshot) {
+      if (!mounted) break;
+      final icon = await widgetToMarkerIcon(customMarker(dto.hazardLevel), context);
+      markers.add(Marker(
+        markerId: MarkerId(dto.id),
+        position: LatLng(dto.latitude, dto.longitude),
+        icon: icon,
+        infoWindow: InfoWindow(title: dto.hazardLevel.koLabel),
+        onTap: () => viewModel.fetchReport(dto.id),
+      ));
+    }
+
+    _isLoadingMarkers = false;
+    if (mounted) viewModel.setMarkers(markers);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // watch allows the widget to rebuild when notifyListeners() is called in VM
     final viewModel = context.watch<MapViewModel>();
+
+    // markerModels가 바뀔 때마다 마커 재변환
+    if (!viewModel.isLoading &&
+        viewModel.currentLocation != null &&
+        viewModel.markerModels != _lastLoadedModels) {
+      _lastLoadedModels = viewModel.markerModels;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _loadMarkers(viewModel);
+      });
+    }
 
     return Scaffold(
       body: viewModel.isLoading || viewModel.currentLocation == null
@@ -39,11 +117,14 @@ class _MapScreenContent extends StatelessWidget {
               zoom: 15.0,
             ),
             onMapCreated: viewModel.onMapCreated,
+            onCameraIdle: () async {
+              final zoom = await viewModel.mapController?.getZoomLevel();
+              if (zoom != null) viewModel.onCameraIdle(zoom);
+            },
             myLocationEnabled: true,
             myLocationButtonEnabled: false,
             zoomControlsEnabled: false,
-            // Add markers here if your ViewModel has them
-            // markers: viewModel.markers,
+            markers: viewModel.markers,
           ),
 
           // 2. Top UI (Search & Categories)
@@ -199,6 +280,93 @@ class _MapScreenContent extends StatelessWidget {
       backgroundColor: isPrimary ? AnsimColor.primary : Colors.white,
       foregroundColor: isPrimary ? Colors.white : Colors.black87,
       child: Icon(icon),
+    );
+  }
+}
+
+class _ReportBottomSheet extends StatelessWidget {
+  final ReportResponse report;
+
+  const _ReportBottomSheet({required this.report});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 핸들
+          Center(
+            child: Container(
+              width: 40, height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // 레벨 뱃지 + 유형
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: report.hazardLevel.color,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  report.hazardLevel.koLabel,
+                  style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                report.hazardType.koLabel,
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+
+          // 출처 (report / safetyMungoReport)
+          Row(
+            children: [
+              const Icon(Icons.info_outline, size: 16, color: Colors.grey),
+              const SizedBox(width: 4),
+              Text(report.source, style: const TextStyle(color: Colors.grey, fontSize: 13)),
+            ],
+          ),
+          const SizedBox(height: 8),
+
+          // 설명
+          if (report.report?.description != null && report.report!.description!.isNotEmpty) ...[
+            Text(report.report!.description!, style: const TextStyle(fontSize: 14)),
+            const SizedBox(height: 12),
+          ],
+
+          // 좋아요 / 댓글 / 날짜
+          Row(
+            children: [
+              const Icon(Icons.thumb_up_outlined, size: 14, color: Colors.grey),
+              const SizedBox(width: 4),
+              Text('${report.likeCount}', style: const TextStyle(fontSize: 13, color: Colors.grey)),
+              const SizedBox(width: 12),
+              const Icon(Icons.comment_outlined, size: 14, color: Colors.grey),
+              const SizedBox(width: 4),
+              Text('${report.commentCount}', style: const TextStyle(fontSize: 13, color: Colors.grey)),
+              const Spacer(),
+              Text(
+                '${report.createdAt.year}.${report.createdAt.month.toString().padLeft(2, '0')}.${report.createdAt.day.toString().padLeft(2, '0')}',
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

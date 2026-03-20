@@ -10,8 +10,14 @@ abstract class Apis {
 
   /// 신고 관련 api
   static const String analysis = "/api/analysis"; // 이미지 분석
+  static const String reports = "/api/reports"; // 신고 단건 조회
 
 
   /// 마커 관련 api
-  static const String markers = "/markers";
+  static const String markers = "/api/markers";
+
+  /// 이미지 관련 api
+  static const String imageSignedUrl = "/api/images/signed-url";
+
+
 }
