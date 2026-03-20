@@ -9,6 +9,34 @@ import 'package:dio/dio.dart';
 class MarkerService {
   final ApiClient _apiClient = ApiClient();
 
+  /// 마커 생성 (신고 + 마커 동시 생성)
+  Future<void> createMarker({
+    required double latitude,
+    required double longitude,
+    required String hazardType,
+    required String hazardLevel,
+    required String description,
+    List<Map<String, dynamic>>? images,
+  }) async {
+    try {
+      await _apiClient.dio.post(
+        Apis.markers,
+        data: {
+          'latitude': latitude,
+          'longitude': longitude,
+          'hazardType': hazardType,
+          'hazardLevel': hazardLevel,
+          'description': description,
+          if (images != null) 'images': images,
+        },
+      );
+      log('[MarkerService] 마커 생성 성공');
+    } catch (e) {
+      log('[MarkerService] 마커 생성 실패: $e');
+      rethrow;
+    }
+  }
+
   Future<List<MarkerResponse>> getNearbyMarkers({
     required double lat,
     required double lng,

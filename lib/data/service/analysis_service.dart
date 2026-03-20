@@ -5,22 +5,38 @@ import 'package:ansim_app/data/di/api_client.dart';
 import 'package:ansim_app/data/dto/response/analysis_response.dart';
 import 'package:dio/dio.dart';
 
+/// 업로드 + AI 분석 결과를 함께 반환하는 클래스
+class UploadAndAnalysisResult {
+  final AnalysisResponse analysis;
+  final String imageUrl;
+  final String mimeType;
+  final int fileSize;
+
+  UploadAndAnalysisResult({
+    required this.analysis,
+    required this.imageUrl,
+    required this.mimeType,
+    required this.fileSize,
+  });
+}
+
 class AnalysisService {
   final ApiClient _apiClient = ApiClient();
 
   /// 이미지 업로드부터 분석까지 한 번에 처리하는 프로세스
-  Future<AnalysisResponse> uploadAndAnalyze(String imagePath) async {
+  Future<UploadAndAnalysisResult> uploadAndAnalyze(String imagePath) async {
     try {
       // 1. 서버에 Signed URL 요청 (권한 얻기)
       final file = File(imagePath);
       final fileName = imagePath.split('/').last;
       final fileSize = await file.length();
+      const mimeType = 'image/jpeg';
 
       final urlResponse = await _apiClient.dio.post(
         Apis.imageSignedUrl,
         data: {
           "fileName": fileName,
-          "contentType": "image/jpeg", // 필요 시 확장자에 따라 가변 처리
+          "contentType": mimeType,
           "fileSize": fileSize,
         },
       );
@@ -35,7 +51,7 @@ class AnalysisService {
         options: Options(
           headers: {
             Headers.contentLengthHeader: fileSize,
-            'Content-Type': 'image/jpeg',
+            'Content-Type': mimeType,
             'x-goog-content-length-range': '0,$fileSize',
           },
         ),
@@ -44,8 +60,14 @@ class AnalysisService {
       log("GCS 업로드 완료: $publicUrl");
 
       // 3. AI 분석 API 호출
-      return await _analyzeHazard(publicUrl);
+      final analysis = await _analyzeHazard(publicUrl);
 
+      return UploadAndAnalysisResult(
+        analysis: analysis,
+        imageUrl: publicUrl,
+        mimeType: mimeType,
+        fileSize: fileSize,
+      );
     } on DioException catch (e) {
       log("업로드/분석 중 Dio 에러: ${e.response?.data ?? e.message}");
       throw Exception('처리 실패: ${e.response?.data?['message'] ?? e.message}');
@@ -64,7 +86,7 @@ class AnalysisService {
       },
     );
 
-    if (response.statusCode == 200) {
+    if (response.statusCode == 200 || response.statusCode == 201) {
       return AnalysisResponse.fromJson(response.data as Map<String, dynamic>);
     } else {
       throw Exception('분석 응답 실패');

@@ -56,6 +56,7 @@ class ReportDetail {
   final String id;
   final String userId;
   final String? description;
+  final List<ReportImage> images;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -63,6 +64,7 @@ class ReportDetail {
     required this.id,
     required this.userId,
     this.description,
+    this.images = const [],
     required this.createdAt,
     required this.updatedAt,
   });
@@ -72,8 +74,32 @@ class ReportDetail {
       id: json['id'] as String,
       userId: json['userId'] as String,
       description: json['description'] as String?,
+      images: (json['images'] as List<dynamic>?)
+              ?.map((e) => ReportImage.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          [],
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
+    );
+  }
+}
+
+class ReportImage {
+  final String id;
+  final String url;
+  final String? mimeType;
+
+  ReportImage({
+    required this.id,
+    required this.url,
+    this.mimeType,
+  });
+
+  factory ReportImage.fromJson(Map<String, dynamic> json) {
+    return ReportImage(
+      id: json['id'] as String,
+      url: json['url'] as String,
+      mimeType: json['mimeType'] as String?,
     );
   }
 }
