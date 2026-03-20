@@ -62,6 +62,18 @@ class MyPageViewModel extends ChangeNotifier {
     }
   }
 
+  Future<void> updateProfile({String? name, String? address}) async {
+    try {
+      await _userService.updateProfile(name: name, address: address);
+      if (name != null) _name = name;
+      if (address != null) _address = address;
+      notifyListeners();
+    } catch (e) {
+      debugPrint('프로필 수정 실패: $e');
+      rethrow;
+    }
+  }
+
   Future<void> toggleNearbyDangerAlert(bool value) async {
     _nearbyDangerAlert = value;
     notifyListeners();

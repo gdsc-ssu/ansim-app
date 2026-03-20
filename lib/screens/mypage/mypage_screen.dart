@@ -3,6 +3,7 @@ import 'package:ansim_app/common/enums/hazard_type.dart';
 import 'package:ansim_app/common/widgets/atom/texts/texts.dart';
 import 'package:ansim_app/constansts/colors.dart';
 import 'package:ansim_app/constansts/paths.dart';
+import 'package:ansim_app/screens/mypage/edit_profile_screen.dart';
 import 'package:ansim_app/screens/mypage/mypage_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -46,7 +47,7 @@ class _MyPageContent extends StatelessWidget {
         child: Column(
           children: [
             const SizedBox(height: 8),
-            _buildProfileSection(viewModel),
+            _buildProfileSection(context, viewModel),
             const SizedBox(height: 8),
             _buildMyReportsSection(context, viewModel),
             const SizedBox(height: 8),
@@ -60,7 +61,7 @@ class _MyPageContent extends StatelessWidget {
     );
   }
 
-  Widget _buildProfileSection(MyPageViewModel viewModel) {
+  Widget _buildProfileSection(BuildContext context, MyPageViewModel viewModel) {
     return Container(
       color: Colors.white,
       padding: const EdgeInsets.all(20),
@@ -103,6 +104,17 @@ class _MyPageContent extends StatelessWidget {
                 ),
               ],
             ),
+          ),
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => EditProfileScreen(viewModel: viewModel),
+                ),
+              );
+            },
+            icon: const Icon(Icons.edit_outlined, size: 20, color: Colors.grey),
           ),
         ],
       ),

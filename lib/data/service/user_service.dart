@@ -28,6 +28,23 @@ class UserService {
     }
   }
 
+  /// 프로필 수정
+  Future<void> updateProfile({String? name, String? address}) async {
+    try {
+      await _apiClient.dio.patch(
+        Apis.userMe,
+        data: {
+          if (name != null) 'name': name,
+          if (address != null) 'address': address,
+        },
+      );
+      log('[UserService] 프로필 수정 성공');
+    } catch (e) {
+      log('[UserService] 프로필 수정 실패: $e');
+      rethrow;
+    }
+  }
+
   /// 알림 설정 수정
   Future<void> updateSettings({
     bool? nearbyDangerAlert,
