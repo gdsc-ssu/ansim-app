@@ -12,4 +12,6 @@ abstract class Paths {
 
   static const String myPage = '/myPage';
 
+  static const String alarm = '/alarm';
+
 }
