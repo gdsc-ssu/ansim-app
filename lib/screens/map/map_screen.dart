@@ -341,6 +341,25 @@ class _ReportBottomSheet extends StatelessWidget {
           ),
           const SizedBox(height: 16),
 
+          // 이미지
+          if (report.report != null && report.report!.images.isNotEmpty)
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.network(
+                report.report!.images.first.url,
+                height: 180,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Container(
+                  height: 180,
+                  color: Colors.grey.shade200,
+                  child: const Center(child: Icon(Icons.broken_image, color: Colors.grey)),
+                ),
+              ),
+            ),
+          if (report.report != null && report.report!.images.isNotEmpty)
+            const SizedBox(height: 16),
+
           // 레벨 뱃지 + 유형
           Row(
             children: [

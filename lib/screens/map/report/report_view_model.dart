@@ -158,22 +158,20 @@ class ReportViewModel extends ChangeNotifier {
   Future<bool> submitReport() async {
     if (_capturedImage == null || _isAnalyzing) return false;
     if (latitude == null || longitude == null) return false;
+    if (_uploadedImageUrl == null) return false;
 
     try {
       final description = descriptionController.text.trim().isEmpty
           ? '${_hazardType.koLabel} ${_hazardLevel.koLabel}'
           : descriptionController.text.trim();
 
-      List<Map<String, dynamic>>? images;
-      if (_uploadedImageUrl != null) {
-        images = [
-          {
-            'url': _uploadedImageUrl!,
-            'mimeType': _uploadedImageMimeType ?? 'image/jpeg',
-            'size': _uploadedImageFileSize ?? 0,
-          },
-        ];
-      }
+      final images = [
+        {
+          'url': _uploadedImageUrl!,
+          'mimeType': _uploadedImageMimeType ?? 'image/jpeg',
+          'size': _uploadedImageFileSize ?? 0,
+        },
+      ];
 
       await _markerService.createMarker(
         latitude: latitude!,
