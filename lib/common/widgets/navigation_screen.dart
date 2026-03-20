@@ -34,11 +34,7 @@ class _NavigationContent extends StatelessWidget {
     final viewModel = context.watch<MapViewModel>();
 
     return Scaffold(
-      // IndexedStack은 화면 전환 시 이전 상태를 보존해줍니다 (지도 위치 등)
-      body: IndexedStack(
-        index: viewModel.currentIndex,
-        children: _screens,
-      ),
+      body: _screens[viewModel.currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: viewModel.currentIndex,
         onTap: (index) => viewModel.changeTab(index),
