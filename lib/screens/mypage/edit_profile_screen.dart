@@ -43,64 +43,72 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: const BasicAppBar(title: '프로필 편집'),
-      body: Padding(
-        padding: const EdgeInsets.all(24),
+      body: SafeArea(
         child: Column(
           children: [
-            // 프로필 이미지
-            Center(
-              child: Stack(
-                children: [
-                  CircleAvatar(
-                    radius: 48,
-                    backgroundColor: AnsimColor.bgSecondary,
-                    backgroundImage: widget.viewModel.profileImage != null
-                        ? NetworkImage(widget.viewModel.profileImage!)
-                        : null,
-                    child: widget.viewModel.profileImage == null
-                        ? const Icon(Icons.person, size: 48, color: Colors.grey)
-                        : null,
-                  ),
-                  Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: const BoxDecoration(
-                        color: AnsimColor.primary,
-                        shape: BoxShape.circle,
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  children: [
+                    // 프로필 이미지
+                    Center(
+                      child: Stack(
+                        children: [
+                          CircleAvatar(
+                            radius: 48,
+                            backgroundColor: AnsimColor.bgSecondary,
+                            backgroundImage: widget.viewModel.profileImage != null
+                                ? NetworkImage(widget.viewModel.profileImage!)
+                                : null,
+                            child: widget.viewModel.profileImage == null
+                                ? const Icon(Icons.person, size: 48, color: Colors.grey)
+                                : null,
+                          ),
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: const BoxDecoration(
+                                color: AnsimColor.primary,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.camera_alt, size: 16, color: Colors.white),
+                            ),
+                          ),
+                        ],
                       ),
-                      child: const Icon(Icons.camera_alt, size: 16, color: Colors.white),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 32),
+
+                    // 이름
+                    _buildTextField(
+                      label: '이름',
+                      controller: _nameController,
+                      hint: '이름을 입력하세요',
+                    ),
+                    const SizedBox(height: 20),
+
+                    // 주소
+                    _buildTextField(
+                      label: '주소',
+                      controller: _addressController,
+                      hint: '주소를 입력하세요',
+                    ),
+                  ],
+                ),
               ),
             ),
-            const SizedBox(height: 32),
-
-            // 이름
-            _buildTextField(
-              label: '이름',
-              controller: _nameController,
-              hint: '이름을 입력하세요',
-            ),
-            const SizedBox(height: 20),
-
-            // 주소
-            _buildTextField(
-              label: '주소',
-              controller: _addressController,
-              hint: '주소를 입력하세요',
-            ),
-
-            const Spacer(),
 
             // 저장 버튼
-            AnsimButton(
-              text: _isSaving ? '저장 중...' : '저장',
-              onPressed: _isSaving ? () {} : _save,
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
+              child: AnsimButton(
+                text: _isSaving ? '저장 중...' : '저장',
+                onPressed: _isSaving ? () {} : _save,
+              ),
             ),
-            const SizedBox(height: 20),
           ],
         ),
       ),
